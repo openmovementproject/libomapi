@@ -7,6 +7,11 @@ A rendering of the Doxygen documentation is available at: http://digitalinteract
 ## Ports
 
 ```
+# Windows
+\\.\COM123
+```
+
+```
 # Mac OS
 /dev/tty.usbserial-*
 ## ioreg -p IOUSB -l -b | grep -E "@|PortNum|USB Serial Number"
