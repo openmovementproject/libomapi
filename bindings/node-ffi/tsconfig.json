@@ -1,0 +1,30 @@
+{
+	"compilerOptions": {
+		"declaration": true,
+		"emitDecoratorMetadata": true,
+		"experimentalDecorators": true,
+		"mapRoot": "./",
+		"outDir": "./",
+		"module": "commonjs",
+		"moduleResolution": "node",
+		"noEmitOnError": true,
+		"noImplicitAny": false,
+		"sourceMap": true,
+		"target": "es2016",
+		"lib": [
+		  "es2017",
+		  "dom"
+		],
+		"types": [
+			"node"
+		],
+		"typeRoots": [
+			"../node_modules/@types"
+		]
+	},
+	"exclude": [
+	   "node_modules",
+	   "node_modules/@typings",
+	   "typings"
+	]
+}

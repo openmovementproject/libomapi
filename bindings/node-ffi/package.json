@@ -1,0 +1,28 @@
+{
+  "name": "libomapi",
+  "version": "1.0.0",
+  "description": "Open Movement API Library",
+  "keywords": [
+    "Open Movement",
+    "AX3"
+  ],
+  "author": "Dan Jackson <dan.jackson@newcastle.ac.uk>",
+  "license": "BSD-2-Clause",
+  "scripts": {
+    "compile": "tsc",
+    "install": "node-gyp configure  &&  node-gyp build  &&  tsc  &&  node post-build.js"
+  },
+  "dependencies": {
+    "@types/node": "^8.5.2",
+    "ffi": "^2.2.0",
+    "node-gyp": "^3.6.2",
+    "ref": "^1.3.5",
+    "ref-array": "^1.2.0",
+    "reflect-metadata": "^0.1.10",
+    "typescript": "^2.6.2"
+  },
+  "devDependencies": {},
+  "bundledDependencies": [],
+  "main": "libomapi.js",
+  "types": "libomapi.d.ts"
+}
