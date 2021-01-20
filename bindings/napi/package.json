@@ -1,0 +1,23 @@
+{
+  "name": "libomapi-napi",
+  "version": "1.0.0",
+  "description": "N-API Wrapper for Open Movement API Library",
+  "keywords": [
+    "Open Movement",
+    "AX3"
+  ],
+  "author": "Dan Jackson <dan.jackson@newcastle.ac.uk>",
+  "license": "BSD-2-Clause",
+  "scripts": {
+    "compile": "",
+    "install": "node-gyp configure build",
+    "start": "node --napi-modules test.js"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "node-gyp": "^3.7.0"
+  },
+  "bundledDependencies": [],
+  "repository": "https://openlab.ncl.ac.uk/gitlab/openmovement/libomapi-napi",
+  "main": "libomapi.js"
+}
