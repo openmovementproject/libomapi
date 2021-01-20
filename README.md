@@ -2,6 +2,7 @@
 
 Open Movement C-based API "OMAPI", plus bindings for .NET, Java, Node NAPI, Node FFI.
 
+A rendering of the Doxygen documentation is available at: http://digitalinteraction.github.io/openmovement/omapi/html/
 
 ## Ports
 
