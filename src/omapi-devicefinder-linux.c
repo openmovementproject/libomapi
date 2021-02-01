@@ -53,17 +53,17 @@ static char isWsl;
 static unsigned int DeviceIdFromSerialNumber(const char *serialNumber)
 {
 	// Return the number found at the end of the string (0 if none)
-	bool inNumber = false;
+	char inNumber = 0;
     unsigned int value = (unsigned int)-1;
     const char *p;
     for (p = serialNumber; *p != 0; p++)
     {
 		if (*p >= '0' && *p <= '9')
 		{
-			if (!inNumber) { inNumber = true; value = 0; }
+			if (!inNumber) { inNumber = 1; value = 0; }
 			value = (10 * value) + (*p - '0');
 		}
-		else inNumber = false;
+		else inNumber = 0;
     }
     return value;
 }
