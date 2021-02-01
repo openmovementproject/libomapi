@@ -1,7 +1,11 @@
 // node-gyp configure build && node --napi-modules test.js
 
 // TODO: Use 'bindings' module
-const libomapi = require('./build/Release/libomapi_napi');
+const libomapi = require(
+	process.platform == 'win32'
+	? './build/Release/libomapi_napi'
+	: './build/Release/omapi_napi'		// output appears renamed to remove 'lib' on non-Windows?
+);
 
 async function log(ref, message) {
   console.log("LOG:", message);
