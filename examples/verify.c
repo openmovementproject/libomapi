@@ -59,6 +59,8 @@
 #define gmtime_r(timer, result) gmtime_s(result, timer)
 #define timegm _mkgmtime
 #define tzset _tzset
+#define sleep(seconds) Sleep(seconds * 1000UL)
+#define usleep(microseconds) Sleep(microseconds / 1000UL)
 #endif
 
 // Cross-platform multi-threading
@@ -1202,8 +1204,8 @@ int verify(void)
 
     for (;;)
     {
-        /* Wait 5 seconds */
-        Sleep(60000);
+        /* Wait 60 seconds */
+        sleep(60);
         fprintf(stderr, "<.>");
     }
 
