@@ -182,6 +182,7 @@
  #ifndef OM_H
  #define OM_H
 
+#include <stdlib.h>
 
 /* Plain C for undecorated function names in DLL */
 #ifdef __cplusplus
@@ -193,12 +194,14 @@ extern "C" {
  * @cond _
  * On Windows, if not statically linked, we define the Windows DLL import/export declaration
  */
-#if defined(_WIN32) && defined(_WINDLL)
-	#define OM_EXPORT __declspec(dllexport)         /**< Exporting to a DLL (must also ensure setup to be __cdecl). @hideinitializer */
-#elif defined(_WIN32) && defined(OMAPI_DYNLIB_IMPORT)
-	#define OM_EXPORT __declspec(dllimport)         /**< Importing from DLL. @hideinitializer */
-#else
-    #define OM_EXPORT                               /**< A standard, static link. @hideinitializer */
+#ifndef OM_EXPORT
+    #if defined(_WIN32) && defined(_WINDLL)
+	    #define OM_EXPORT __declspec(dllexport)         /**< Exporting to a DLL (must also ensure setup to be __cdecl). @hideinitializer */
+    #elif defined(_WIN32) && defined(OMAPI_DYNLIB_IMPORT)
+    	#define OM_EXPORT __declspec(dllimport)         /**< Importing from DLL. @hideinitializer */
+    #else
+        #define OM_EXPORT                               /**< A standard, static link. @hideinitializer */
+    #endif
 #endif
 /**@endcond*/
 

@@ -131,7 +131,7 @@ int OmGetDevicePath(int deviceId, char *pathBuffer)
 #define BATT_CHARGE_ZERO 614
 #define BATT_CHARGE_FULL 708
 #define USB_BUS_SENSE 1
-static unsigned int AdcBattToPercent(unsigned int Vbat)
+static unsigned int AdcBattToPercentStatus(unsigned int Vbat)
 {
     /*
 		This is the new code written by KL 2012 which compensates for the non linearity of
@@ -198,7 +198,7 @@ int OmGetBatteryLevel(int deviceId)
     if (status == 0)
     {
         int raw = atoi(parts[1]);
-        status = AdcBattToPercent(raw);
+        status = AdcBattToPercentStatus(raw);
     }
 
     if (status > 95 && atoi(parts[5]) != 0) { status = 100; }   // Charge complete (raw reading of 714)

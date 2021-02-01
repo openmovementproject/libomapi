@@ -26,7 +26,8 @@
 // Open Movement API - Internal Header File
 // Dan Jackson, 2011-2012
 
-
+#ifndef OMAPI_INTERNAL
+#define OMAPI_INTERNAL
 
 // Cross-platform multi-threading and mutex
 #if defined(_WIN32) // || defined(__CYGWIN__)
@@ -271,4 +272,6 @@ OmDeviceState *OmDevice(int serial);
 
 #ifdef __cplusplus
 }
+#endif
+
 #endif
