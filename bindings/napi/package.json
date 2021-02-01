@@ -15,7 +15,7 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "node-gyp": "^3.7.0"
+    "node-gyp": "^7.1.2"
   },
   "bundledDependencies": [],
   "repository": "https://openlab.ncl.ac.uk/gitlab/openmovement/libomapi-napi",
