@@ -31,7 +31,7 @@
 #include <node_api.h>
 #include <stdbool.h>
 
-#include "../libomapi/include/omapi.h"
+#include "../../../include/omapi.h"
 
 #define ERROR_ARGS          "Invalid argument"
 #define ERROR_CREATE        "Cannot create value"

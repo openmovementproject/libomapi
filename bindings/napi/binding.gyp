@@ -3,33 +3,33 @@
 		{
 			"target_name": "libomapi_napi", 
 			"sources": [ 
-				"./src/interface.c",
-				"./src/nomapi.c",
-				"./src/nomapi-main.c",
-				"./src/nomapi-status.c",
-				"./src/nomapi-settings.c",
-				"./src/nomapi-download.c",
-				"./src/nomapi-reader.c",
-				"./libomapi/src/omapi-main.c", 
-				"./libomapi/src/omapi-status.c", 
-				"./libomapi/src/omapi-settings.c", 
-				"./libomapi/src/omapi-download.c", 
-				"./libomapi/src/omapi-reader.c", 
-				"./libomapi/src/omapi-internal.c", 
+				"src/interface.c",
+				"src/nomapi.c",
+				"src/nomapi-main.c",
+				"src/nomapi-status.c",
+				"src/nomapi-settings.c",
+				"src/nomapi-download.c",
+				"src/nomapi-reader.c",
+				"../../src/omapi-main.c", 
+				"../../src/omapi-status.c", 
+				"../../src/omapi-settings.c", 
+				"../../src/omapi-download.c", 
+				"../../src/omapi-reader.c", 
+				"../../src/omapi-internal.c", 
 			],
 			"include_dirs": [
-				"./libomapi/include", 
+				"../../include", 
 			],
 			"conditions": [
 				['OS=="win"', {
 					'sources': [
-						"./libomapi/src/omapi-devicefinder-win.cpp", 
+						"../../src/omapi-devicefinder-win.cpp", 
 					],
 					"product_dir": "Release", 
 				},
 				'OS=="linux"', {
 					'sources': [
-						"./libomapi/src/omapi-devicefinder-linux.c", 
+						"../../src/omapi-devicefinder-linux.c", 
 					],
 					'link_settings': {
 						'libraries': [
@@ -40,7 +40,7 @@
 				},
 				'OS=="mac"', {
 					'sources': [
-						"./libomapi/src/omapi-devicefinder-mac.c", 
+						"../../src/omapi-devicefinder-mac.c", 
 					],
 					'link_settings': {
 						'libraries': [
