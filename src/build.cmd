@@ -1,24 +1,24 @@
 @ECHO OFF
-SETLOCAL
+SETLOCAL EnableDelayedExpansion
 CD /D %~dp0
-@echo on
 
-set ARCH=x86
+SET FIND_CL=
+FOR %%p IN (cl.exe) DO SET "FIND_CL=%%~$PATH:p"
+IF DEFINED FIND_CL (
+  ECHO Build tools already on path.
+  GOTO BUILD
+)
 
-IF EXIST "%VS70COMNTOOLS%\..\..\VC\vcvarsall.bat" SET VCVARSALL=%VS70COMNTOOLS%\..\..\VC\vcvarsall.bat
-IF EXIST "%VS71COMNTOOLS%\..\..\VC\vcvarsall.bat" SET VCVARSALL=%VS71COMNTOOLS%\..\..\VC\vcvarsall.bat
-IF EXIST "%VS80COMNTOOLS%\..\..\VC\vcvarsall.bat" SET VCVARSALL=%VS80COMNTOOLS%\..\..\VC\vcvarsall.bat
-IF EXIST "%VS90COMNTOOLS%\..\..\VC\vcvarsall.bat" SET VCVARSALL=%VS90COMNTOOLS%\..\..\VC\vcvarsall.bat
-IF EXIST "%VS100COMNTOOLS%\..\..\VC\vcvarsall.bat" SET VCVARSALL=%VS100COMNTOOLS%\..\..\VC\vcvarsall.bat
-IF EXIST "%VS110COMNTOOLS%\..\..\VC\vcvarsall.bat" SET VCVARSALL=%VS110COMNTOOLS%\..\..\VC\vcvarsall.bat
-IF EXIST "%VS120COMNTOOLS%\..\..\VC\vcvarsall.bat" SET VCVARSALL=%VS120COMNTOOLS%\..\..\VC\vcvarsall.bat
-IF EXIST "%VS130COMNTOOLS%\..\..\VC\vcvarsall.bat" SET VCVARSALL=%VS130COMNTOOLS%\..\..\VC\vcvarsall.bat
-IF EXIST "%VS140COMNTOOLS%\..\..\VC\vcvarsall.bat" SET VCVARSALL=%VS140COMNTOOLS%\..\..\VC\vcvarsall.bat
-IF EXIST "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" SET VCVARSALL=%ProgramFiles(x86)%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat
-IF EXIST "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" SET VCVARSALL=%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat
+ECHO Build tools not on path, looking for 'vcvarsall.bat'...
+SET ARCH=x86
+SET VCVARSALL=
+FOR %%f IN (70 71 80 90 100 110 120 130 140) DO IF EXIST "!VS%%fCOMNTOOLS!\..\..\VC\vcvarsall.bat" SET VCVARSALL=!VS%%fCOMNTOOLS!\..\..\VC\vcvarsall.bat
+FOR /F "usebackq tokens=*" %%f IN (`DIR /B /ON "%ProgramFiles(x86)%\Microsoft Visual Studio\????"`) DO FOR %%g IN (Community Professional Enterprise) DO IF EXIST "%ProgramFiles(x86)%\Microsoft Visual Studio\%%f\%%g\VC\Auxiliary\Build\vcvarsall.bat" SET "VCVARSALL=%ProgramFiles(x86)%\Microsoft Visual Studio\%%f\%%g\VC\Auxiliary\Build\vcvarsall.bat"
+IF "%VCVARSALL%"=="" ECHO Cannot find C compiler environment for 'vcvarsall.bat'. & GOTO ERROR
 ECHO Setting environment variables for C compiler... %VCVARSALL%
-call "%VCVARSALL%" %ARCH%
+CALL "%VCVARSALL%" %ARCH%
 
+:BUILD
 ECHO.
 ECHO ARCH=%ARCH%
 ECHO.
@@ -36,7 +36,8 @@ ECHO.
 
 :COMPILE
 ECHO Compiling...
-cl -D_WINDLL -c /DNO_MMAP /EHsc /I"..\include" /Tc"omapi-download.c" /Tc"omapi-internal.c" /Tc"omapi-main.c" /Tc"omapi-reader.c" /Tc"omapi-settings.c" /Tc"omapi-status.c" /Tp"omapi-devicefinder-win.cpp"
+rem /DNO_MMAP
+cl /D_WINDLL -c /EHsc /I"..\include" /Tc"omapi-download.c" /Tc"omapi-internal.c" /Tc"omapi-main.c" /Tc"omapi-reader.c" /Tc"omapi-settings.c" /Tc"omapi-status.c" /Tp"omapi-devicefinder-win.cpp"
 IF ERRORLEVEL 1 GOTO ERROR
 
 :LINK
@@ -60,7 +61,7 @@ IF ERRORLEVEL 1 GOTO ERROR
 
 :TEST
 ECHO Building test program...
-cl /EHsc /DOMAPI_DYNLIB_IMPORT /Dtest_main=main /I"..\include" /Tc"test.c"
+cl /EHsc /DOMAPI_DYNLIB_IMPORT /Dtest_main=main /I"..\include" /Tc"..\examples\test.c"
 IF ERRORLEVEL 1 GOTO ERROR
 link /out:test.exe test libomapi.lib
 IF ERRORLEVEL 1 GOTO ERROR
