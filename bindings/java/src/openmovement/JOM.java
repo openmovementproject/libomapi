@@ -75,7 +75,7 @@ public class JOM {
 		int numDevices = JOMAPI.OmGetDeviceIds(deviceIds, deviceIds.length);
 		System.out.println("= " + numDevices + " device(s)");
 		for (int i = 0; i < numDevices; i++) {
-			System.out.println("#" + i + " found device");
+			System.out.println("#" + i + " found device - " + deviceIds[i]);
 		}
 	}
 	
