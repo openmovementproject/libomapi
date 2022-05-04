@@ -536,12 +536,12 @@ static unsigned int AdcBattToPercentReader(unsigned int Vbat)
 	#define BATT_FIT_CONST_6	375LU
 	#define BATT_FIT_CONST_7	614LU	
 	#define BATT_FIT_CONST_8	8
-    #define USB_BUS_SENSE 0
+    //#define USB_BUS_SENSE 0
 
 	unsigned long temp; 
 	
 	// Compensate for charging current
-	if (USB_BUS_SENSE && (Vbat>12)) Vbat -= 12; 
+	//if (USB_BUS_SENSE && (Vbat>12)) Vbat -= 12; 
  
 	// Early out functions for full and zero charge
 	if (Vbat > BATT_CHARGE_FULL) return 100;

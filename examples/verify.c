@@ -151,11 +151,14 @@ static int globalAllowedRestarts = 0;
 static int globalAllowRecentRestarts = 0;	// e.g. 6 hours = (6*60*60) = 21600
 static int globalTest = 0;					// AX3 3000 sectors/hour; AX6 9000 sectors/hour; test/skip example: -test-skip 2309 252533
 static int globalSkip = 0;
+static int globalAllowedLateStart = 0;      // e.g. 12 hours = (12*60*60) = 43200
+static int globalPassDuration = 0;          // Duration threshold to pass even if stopped early:  e.g. 167:59 h:m = 604740
+static int globalInitialChargeAdjustment = 0;   // Maximum percentage of initial charge deficit to adjust duration by (at duration/% rate)
 
-static float batteryAccelWarn = 0.25f;
-static float batteryAccelError = 0.29f;
-static float batteryAccelGyroWarn = 0.521f;
-static float batteryAccelGyroError = 0.595f;  // at least 7-days: 0.595%; at least 8-days: 0.521%
+static float batteryAccelWarn = 0.25f;          // 
+static float batteryAccelError = 0.3086f;       // at least 13.5 days: 0.3086%
+static float batteryAccelGyroWarn = 0.521f;     // at least 8-days: 0.521%
+static float batteryAccelGyroError = 0.595f;    // at least 7-days: 0.595%
 
 #ifdef ID_NAND
 // "NANDID=%02x:%02x:%02x:%02x:%02x:%02x,%d\r\n", id[0], id[1], id[2], id[3], id[4], id[5], nandPresent
@@ -678,6 +681,28 @@ if (skipped) { recordingLength = blockStart - previousBlockEnd; }
     /* Summary */
     {
         int startStopFail = 0;
+        int startStopWarn = 0;
+        unsigned long aStart = (unsigned long)(veryFirstTime >> 16);
+        unsigned long aEnd = (unsigned long)(lastTime >> 16);
+        unsigned long duration = aEnd - aStart;
+        unsigned long adjustedDuration = duration;
+
+        if (globalInitialChargeAdjustment > 0) {
+            float batteryChange = (float)batteryEndPercent - batteryStartPercent;
+            float underPercentage = 100.0f - batteryStartPercent;
+            if (underPercentage > globalInitialChargeAdjustment) underPercentage = (float)globalInitialChargeAdjustment;
+            if (underPercentage > batteryChange) underPercentage = batteryChange;
+            if (batteryChange >= 50) {
+                unsigned long adjustment = (unsigned long)(underPercentage * duration / batteryChange);
+                // Limit the rate-based adjustment to the same fraction of the passing duration (if specified)
+                if (globalPassDuration > 0)
+                {
+                    if ((int)adjustment > globalInitialChargeAdjustment * globalPassDuration / 100) adjustment = globalInitialChargeAdjustment * globalPassDuration / 100;
+                }
+                adjustedDuration = duration + adjustment;
+                fprintf(stderr, "NOTE: Adjusting duration to compensate for initial charge (%d%%) for %0.1f%% at %0.1fh/%%: %dh+%dh=%dh.\n", batteryStartPercent, underPercentage, duration / batteryChange / 60 / 60, duration / 60 / 60, adjustment / 60 / 60, adjustedDuration / 60 / 60);
+            }
+        }
 
         hp = OmReaderRawHeaderPacket(reader);
 
@@ -686,23 +711,27 @@ if (skipped) { recordingLength = blockStart - previousBlockEnd; }
         if (hp == NULL)
         {
             fprintf(stderr, "ERROR: Unable to access file header for start/stop times.\n");
-            startStopFail += 4;
+            startStopFail |= 4;
         }
         else
         {
             if (hp->loggingStartTime >= OM_DATETIME_MIN_VALID && hp->loggingStartTime <= OM_DATETIME_MAX_VALID && hp->loggingEndTime > hp->loggingStartTime)
             {
                 unsigned long fStart = (unsigned long)TimeSerial(hp->loggingStartTime);
-                unsigned long aStart = (unsigned long)(veryFirstTime >> 16);
                 int startDiff = (int)(aStart - fStart);
                 if (abs(startDiff) < 80)
                 { 
                     fprintf(stderr, "NOTE: Data started near recording start time (%ds).\n", startDiff);
                 }
+                else if (globalAllowedLateStart > 0 && startDiff <= globalAllowedLateStart)
+                {
+                    fprintf(stderr, "NOTE: Ignoring whether data started near recording start time (difference was %ds).\n", startDiff);
+                    startStopWarn |= 2;
+                }
                 else
                 {
                     fprintf(stderr, "ERROR: Data did not start near recording start time (%ds).\n", startDiff);
-                    startStopFail += 2;
+                    startStopFail |= 2;
                 }
             }
             else
@@ -714,7 +743,6 @@ if (skipped) { recordingLength = blockStart - previousBlockEnd; }
             if (hp->loggingEndTime >= OM_DATETIME_MIN_VALID && hp->loggingEndTime <= OM_DATETIME_MAX_VALID && hp->loggingStartTime < hp->loggingEndTime)
             {
                 unsigned long fEnd = (unsigned long)TimeSerial(hp->loggingEndTime);
-                unsigned long aEnd = (unsigned long)(lastTime >> 16);
                 int stopDiff = (int)(aEnd - fEnd);
                 if (download->options & VERIFY_OPTION_NO_CHECK_STOP)
                 {
@@ -724,10 +752,15 @@ if (skipped) { recordingLength = blockStart - previousBlockEnd; }
                 { 
                     fprintf(stderr, "NOTE: Data stopped near recording stop time (%ds).\n", stopDiff);
                 }
+                else if (globalPassDuration > 0 && (int)adjustedDuration >= globalPassDuration)
+                {
+                    fprintf(stderr, "NOTE: Data did not stop near recording stop time (%ds), but adjusted recording duration (%dh) exceeded pass duration (%dh).\n", stopDiff, (int)(adjustedDuration / 60 / 60), (int)(globalPassDuration / 60 / 60));
+                    startStopWarn |= 1;
+                }
                 else
                 {
                     fprintf(stderr, "ERROR: Data did not stop near recording stop time (%ds).\n", stopDiff);
-                    startStopFail += 1;
+                    startStopFail |= 1;
                 }
             }
             else
@@ -739,56 +772,68 @@ if (skipped) { recordingLength = blockStart - previousBlockEnd; }
 		download->verifyEnded = now();
 
 // Error mask
-#define CODE_ERROR_MASK         0xfffff000
-#define CODE_WARNING_MASK       0x00000fff
+#define CODE_ERROR_MASK         0xffff0000
+#define CODE_WARNING_MASK       0x0000ffff
 
 // FILE - Read file issue (sector incorrect or checksum mismatch)
-#define CODE_WARNING_FILE       0x000001
-#define CODE_ERROR_FILE         0x001000
+#define CODE_WARNING_FILE       0x00000001
+#define CODE_ERROR_FILE         0x00010000
 
 // EVENT - System logged event error (e.g. FIFO overflow)
-#define CODE_WARNING_EVENT      0x000002
-#define CODE_ERROR_EVENT        0x002000
+#define CODE_WARNING_EVENT      0x00000002
+#define CODE_ERROR_EVENT        0x00020000
 
 // STUCK - Where the accelerometer appears to be stuck at the same value 
-#define CODE_WARNING_STUCK      0x000004
-#define CODE_ERROR_STUCK        0x004000
+#define CODE_WARNING_STUCK      0x00000004
+#define CODE_ERROR_STUCK        0x00040000
 
 // RANGE - Where the accelerometer doesn't seem to average to 1G
-#define CODE_WARNING_RANGE      0x000008
-#define CODE_ERROR_RANGE        0x008000
+#define CODE_WARNING_RANGE      0x00000008
+#define CODE_ERROR_RANGE        0x00080000
 
 // RATE - Where the rate is too far off 100Hz
-#define CODE_WARNING_RATE       0x000010
-#define CODE_ERROR_RATE         0x010000
+#define CODE_WARNING_RATE       0x00000010
+#define CODE_ERROR_RATE         0x00100000
 
 // BREAKS - Where there is a gap in the data
-#define CODE_WARNING_BREAKS     0x000020
-#define CODE_ERROR_BREAKS       0x020000
+#define CODE_WARNING_BREAKS     0x00000020
+#define CODE_ERROR_BREAKS       0x00200000
 
 // RESTARTS - Where the device has restarted
-#define CODE_WARNING_RESTARTS   0x000040
-#define CODE_ERROR_RESTARTS     0x040000
+#define CODE_WARNING_RESTARTS   0x00000040
+#define CODE_ERROR_RESTARTS     0x00400000
 
 // LIGHT - Where the light level reading is far lower than normal (seems to indicate a failure)
-#define CODE_WARNING_LIGHT      0x000080
-#define CODE_ERROR_LIGHT        0x080000
+#define CODE_WARNING_LIGHT      0x00000080
+#define CODE_ERROR_LIGHT        0x00800000
 
 // BATT - Where the battery discharge is more rapid than usual
-#define CODE_WARNING_BATT       0x000100
-#define CODE_ERROR_BATT         0x100000
+#define CODE_WARNING_BATT       0x00000100
+#define CODE_ERROR_BATT         0x01000000
 
 // STARTSTOP - Where the configured start/stop times are not met
-#define CODE_WARNING_STARTSTOP  0x000200
-#define CODE_ERROR_STARTSTOP    0x200000
+#define CODE_WARNING_STARTSTOP  0x00000200
+#define CODE_ERROR_STARTSTOP    0x02000000
 
 // NANDHEALTH - Where the number of reported spare blocks are low
-#define CODE_WARNING_NANDHEALTH 0x000400
-#define CODE_ERROR_NANDHEALTH   0x400000
+#define CODE_WARNING_NANDHEALTH 0x00000400
+#define CODE_ERROR_NANDHEALTH   0x04000000
 
 // NANDID - Where the NAND id is unexpected
-#define CODE_WARNING_NANDID     0x000800
-#define CODE_ERROR_NANDID       0x800000
+#define CODE_WARNING_NANDID     0x00000800
+#define CODE_ERROR_NANDID       0x08000000
+
+// RESERVED_1
+#define CODE_WARNING_RESERVED_1 0x00001000
+#define CODE_ERROR_RESERVED_1   0x10000000
+
+// RESERVED_2
+#define CODE_WARNING_RESERVED_2 0x00002000
+#define CODE_ERROR_RESERVED_2   0x20000000
+
+// RESERVED_3
+#define CODE_WARNING_RESERVED_3 0x00004000
+#define CODE_ERROR_RESERVED_3   0x40000000
 
 
 retval = 0;
@@ -820,7 +865,8 @@ if (!download->hasGyro)
 	}
 }
 // Start/stop
-if (startStopFail) { retval |= CODE_ERROR_STARTSTOP; } 
+if (startStopFail) { retval |= CODE_ERROR_STARTSTOP; }
+if (startStopWarn) { retval |= CODE_WARNING_STARTSTOP; }
 
         fprintf(stderr, "---\n");
         fprintf(stderr, "Input file,%d,\"%s\",%d\n", download->deviceId, download->filename, retval);
@@ -828,7 +874,7 @@ if (startStopFail) { retval |= CODE_ERROR_STARTSTOP; }
         fprintf(stderr, "Summary errors: file=%d, event=%d, stuck=%d, range=%d, rate=%d, breaks=%d\n", errorFile, errorEvent, errorStuck, errorRange, errorRate, errorBreaks);
         fprintf(stderr, "Summary info-1: restart=%d, breakTime=%0.1fs, maxAv=%f\n", restarts, breakTime, maxAv);
         fprintf(stderr, "Summary info-2: minInterval=%0.3f, maxInterval=%0.3f, duration=%0.4fh\n", minInterval / 65536.0f, maxInterval / 65536.0f, ((totalDuration >> 16) / 60.0f / 60.0f));
-        fprintf(stderr, "Summary info-3: minLight=%d, Bmax=%d%%, Bmin=%d%%, intervalFail=%d\n", minLight, batteryMaxPercent, batteryMinPercent, startStopFail);
+        fprintf(stderr, "Summary info-3: minLight=%d, Bmax=%d%%, Bmin=%d%%, intervalFailWarn=%d/%d\n", minLight, batteryMaxPercent, batteryMinPercent, startStopFail, startStopWarn);
 
 if (download != NULL)
 {
@@ -865,6 +911,9 @@ if (download != NULL)
             if (retval & CODE_WARNING_STARTSTOP ) { strcat(description, "W:StartStop;"); }
             if (retval & CODE_WARNING_NANDHEALTH) { strcat(description, "W:NandHealth;"); }
             if (retval & CODE_WARNING_NANDID    ) { strcat(description, "W:NandId;"); }
+            if (retval & CODE_WARNING_RESERVED_1) { strcat(description, "W:Res1;"); }
+            if (retval & CODE_WARNING_RESERVED_2) { strcat(description, "W:Res2;"); }
+            if (retval & CODE_WARNING_RESERVED_3) { strcat(description, "W:Res3;"); }
             if (retval & CODE_ERROR_FILE        ) { strcat(description, "E:File;"); }
             if (retval & CODE_ERROR_EVENT       ) { strcat(description, "E:Event;"); }
             if (retval & CODE_ERROR_STUCK       ) { strcat(description, "E:Stuck;"); }
@@ -877,6 +926,9 @@ if (download != NULL)
             if (retval & CODE_ERROR_STARTSTOP   ) { strcat(description, "E:StartStop;"); }
             if (retval & CODE_ERROR_NANDHEALTH  ) { strcat(description, "E:NandHealth;"); }
             if (retval & CODE_ERROR_NANDID      ) { strcat(description, "E:NandId;"); }
+            if (retval & CODE_ERROR_RESERVED_1  ) { strcat(description, "E:Res1;"); }
+            if (retval & CODE_ERROR_RESERVED_2  ) { strcat(description, "E:Res2;"); }
+            if (retval & CODE_ERROR_RESERVED_3  ) { strcat(description, "E:Res3;"); }
 
         sprintf(line, "VERIFYX," "%s,"  "%d,"       "%d,"      "%d,"       "%d,"       "%d,"       "%d,"      "%d,"        "%d,"       "%.1f,"      "%.4f,"     "%.3f,"                 "%.3f,"                  "%.4f,"                                 "%d,"       "%d,"                "%d,"                "%d,"           "%f,"          "%s\n",
                                  label, retval,     errorFile, errorEvent, errorStuck, errorRange, errorRate, errorBreaks, restarts,   breakTime,   maxAv,       minInterval / 65536.0f, maxInterval / 65536.0f, ((totalDuration >> 16) / 60.0f / 60.0f), minLight,   batteryMaxPercent,   batteryMinPercent,   startStopFail, percentPerHour, description);
@@ -1240,7 +1292,7 @@ int verify_main(int argc, char *argv[])
                 return -2;
             }
             else if (!strcmp(argv[i], "-stop-clear-all"))  { fprintf(stderr, "VERIFY: Option -stop-clear-all\n");    globalOptions |= VERIFY_OPTION_ALL; }
-            else if (!strcmp(argv[i], "-no-check-stop"))   { fprintf(stderr, "VERIFY: Option -no-check-stop\n");     globalOptions |= VERIFY_OPTION_NO_CHECK_STOP; }
+            else if (!strcmp(argv[i], "-no-check-stop")) { fprintf(stderr, "VERIFY: Option -no-check-stop\n");     globalOptions |= VERIFY_OPTION_NO_CHECK_STOP; }
             else if (!strcmp(argv[i], "-output:new"))      { fprintf(stderr, "VERIFY: Option -output:new\n");        globalOptions |= VERIFY_OPTION_OUTPUT_NEW; }
             else if (!strcmp(argv[i], "-output:old"))      { fprintf(stderr, "VERIFY: Option -output:old\n");        globalOptions &= ~VERIFY_OPTION_OUTPUT_NEW; }
 			else if (!strcmp(argv[i], "-allow-restarts")) { globalAllowedRestarts = atoi(argv[++i]); fprintf(stderr, "VERIFY: Option -allow-restarts %d\n", globalAllowedRestarts); }
@@ -1252,6 +1304,9 @@ int verify_main(int argc, char *argv[])
 			else if (!strcmp(argv[i], "-batt-accel-error")) { batteryAccelError = (float)atof(argv[++i]); fprintf(stderr, "VERIFY: Option -battery-gyro-error %f\n", batteryAccelError); }
 			else if (!strcmp(argv[i], "-batt-accelgyro-warn")) { batteryAccelGyroWarn = (float)atof(argv[++i]); fprintf(stderr, "VERIFY: Option -battery-accelgyro-warn %f\n", batteryAccelGyroWarn); }
 			else if (!strcmp(argv[i], "-batt-accelgyro-error")) { batteryAccelGyroError = (float)atof(argv[++i]); fprintf(stderr, "VERIFY: Option -battery-accelgyro-error %f\n", batteryAccelGyroError); }
+            else if (!strcmp(argv[i], "-allow-late-start")) { globalAllowedLateStart = atoi(argv[++i]);  fprintf(stderr, "VERIFY: Option -allow-late-start %d\n", globalAllowedLateStart); }
+            else if (!strcmp(argv[i], "-pass-duration")) { globalPassDuration = atoi(argv[++i]);  fprintf(stderr, "VERIFY: Option -pass-duration %d\n", globalPassDuration); }
+            else if (!strcmp(argv[i], "-initial-charge-adjustment")) { globalInitialChargeAdjustment = atoi(argv[++i]);  fprintf(stderr, "VERIFY: Option -initial-charge-adjustment %d\n", globalInitialChargeAdjustment); }            
             else if (argv[i][0] == '-')
             {
                 fprintf(stdout, "ERROR: Unrecognized option %s\n", argv[i]);
@@ -1304,7 +1359,7 @@ int verify_main(int argc, char *argv[])
 		fprintf(stderr, " [-no-check-stop] [-allow-recent-restarts <s>] [-allow-restarts <n>]");
 		fprintf(stderr, " [-no-configure] [-check-on-device] [-test-skip <test-sectors> <skip-sectors>]");
 		fprintf(stderr, " [-batt-accel-warn 0.25] [-batt-accel-error 0.29] [-batt-accelgyro-warn 0.521] [-batt-accelgyro-error 0.595]");
-		fprintf(stderr, "\n");
+		fprintf(stderr, " [-allow-late-start <s>] [-pass-duration <s>] [-initial-charge-adjustment <%%>]\n");
         fprintf(stderr, "\n");
         fprintf(stderr, "Where: binary-input-file: the name of the binary file to verify.\n");
         fprintf(stderr, "\n");
