@@ -265,6 +265,7 @@ int verify_process(download_t *download)
 {
     char output = 0;
     OmReaderHandle reader;
+    int batteryFirstPercent = -1, batteryLastPercent = -1;
     int batteryStartPercent = 0, batteryEndPercent = 0;
     int batteryMaxPercent = -1, batteryMinPercent = -1;
     unsigned long long veryFirstTime = 0;                   // First time in file
@@ -479,9 +480,11 @@ if (skipped) { recordingLength = blockStart - previousBlockEnd; }
             if (veryFirstTime == 0) { veryFirstTime = firstTime; }
             lastTime = firstTime;
             batteryStartPercent = OmReaderGetValue(reader, OM_VALUE_BATTERY_PERCENT);
+            if (batteryFirstPercent < 0) batteryFirstPercent = batteryStartPercent;
             batteryEndPercent = batteryStartPercent;
             if (batteryMaxPercent < 0) { batteryMaxPercent = batteryStartPercent; }
             if (batteryMinPercent < 0) { batteryMinPercent = batteryStartPercent; }
+            batteryLastPercent = batteryEndPercent;
         }
 
         if (lastBlockStart > 0)
@@ -669,6 +672,7 @@ if (skipped) { recordingLength = blockStart - previousBlockEnd; }
         batteryEndPercent = OmReaderGetValue(reader, OM_VALUE_BATTERY_PERCENT);
         if (batteryEndPercent > batteryMaxPercent) { batteryMaxPercent = batteryEndPercent; }
         if (batteryEndPercent < batteryMinPercent) { batteryMinPercent = batteryEndPercent; }
+        batteryLastPercent = batteryEndPercent;
 
     }
 
@@ -688,19 +692,23 @@ if (skipped) { recordingLength = blockStart - previousBlockEnd; }
         unsigned long adjustedDuration = duration;
 
         if (globalInitialChargeAdjustment > 0) {
-            float batteryChange = (float)batteryEndPercent - batteryStartPercent;
-            float underPercentage = 100.0f - batteryStartPercent;
+            float batteryChange = (float)batteryFirstPercent - batteryLastPercent;
+            float underPercentage = 100.0f - batteryFirstPercent;
             if (underPercentage > globalInitialChargeAdjustment) underPercentage = (float)globalInitialChargeAdjustment;
             if (underPercentage > batteryChange) underPercentage = batteryChange;
+            unsigned long adjustment = (unsigned long)(underPercentage * duration / batteryChange);
+            // Limit the rate-based adjustment to the same fraction of the passing duration (if specified)
+            if (globalPassDuration > 0)
+            {
+                if ((int)adjustment > globalInitialChargeAdjustment * globalPassDuration / 100) adjustment = globalInitialChargeAdjustment * globalPassDuration / 100;
+            }
             if (batteryChange >= 50) {
-                unsigned long adjustment = (unsigned long)(underPercentage * duration / batteryChange);
-                // Limit the rate-based adjustment to the same fraction of the passing duration (if specified)
-                if (globalPassDuration > 0)
-                {
-                    if ((int)adjustment > globalInitialChargeAdjustment * globalPassDuration / 100) adjustment = globalInitialChargeAdjustment * globalPassDuration / 100;
-                }
                 adjustedDuration = duration + adjustment;
-                fprintf(stderr, "NOTE: Adjusting duration to compensate for initial charge (%d%%) for %0.1f%% at %0.1fh/%%: %dh+%dh=%dh.\n", batteryStartPercent, underPercentage, duration / batteryChange / 60 / 60, duration / 60 / 60, adjustment / 60 / 60, adjustedDuration / 60 / 60);
+                fprintf(stderr, "NOTE: Adjusting duration to compensate for initial charge (%d%%) for %0.1f%% at %0.1fh/%%: %dh+%dh=%dh.\n", batteryFirstPercent, underPercentage, duration / batteryChange / 60 / 60, duration / 60 / 60, adjustment / 60 / 60, adjustedDuration / 60 / 60);
+            }
+            else
+            {
+                fprintf(stderr, "NOTE: NOT adjusting duration to compensate for initial charge (%d%%) for %0.1f%% at %0.1fh/%%: %dh+%dh=%dh -- as batteryChange too low %0.1f%% (%d%%-%d%%)\n", batteryFirstPercent, underPercentage, duration / batteryChange / 60 / 60, duration / 60 / 60, adjustment / 60 / 60, adjustedDuration / 60 / 60, batteryChange, batteryFirstPercent, batteryLastPercent);
             }
         }
 
@@ -754,7 +762,7 @@ if (skipped) { recordingLength = blockStart - previousBlockEnd; }
                 }
                 else if (globalPassDuration > 0 && (int)adjustedDuration >= globalPassDuration)
                 {
-                    fprintf(stderr, "NOTE: Data did not stop near recording stop time (%ds), but adjusted recording duration (%dh) exceeded pass duration (%dh).\n", stopDiff, (int)(adjustedDuration / 60 / 60), (int)(globalPassDuration / 60 / 60));
+                    fprintf(stderr, "NOTE: Data did not stop near recording stop time (%ds), but (possibly adjusted) recording duration (%dh) exceeded pass duration (%dh).\n", stopDiff, (int)(adjustedDuration / 60 / 60), (int)(globalPassDuration / 60 / 60));
                     startStopWarn |= 1;
                 }
                 else
