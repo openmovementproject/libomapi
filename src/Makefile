@@ -20,7 +20,7 @@ else
 		endif
 		ifeq ($(UNAME_S),Darwin)
 			OBJECTS += omapi-devicefinder-mac.o
-			LIBS += -lpthread
+			LIBS += -lpthread -framework Cocoa -framework IOKit -framework DiskArbitration
 		endif
 	endif
 endif

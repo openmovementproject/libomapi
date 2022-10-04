@@ -123,17 +123,19 @@ static const char *findMount(io_service_t usbDevice)
 	char *volumePath = NULL;
 
 	// Check IOUSBDevice
-	if (!IOObjectConformsTo( usbDevice, "IOUSBDevice")) return NULL;
+	//fprintf(stderr, "...usbDevice: %p\n", (void *)usbDevice);
+	if (!IOObjectConformsTo(usbDevice, "IOUSBDevice")) return NULL;
 
-	// Check not IOUSBDevice
+	// Check is IOUSBDevice, or IOUSBHostDevice since El Capitan
 	io_name_t className;
 	IOObjectGetClass(usbDevice, className);
-	if (strcmp(className, "IOUSBDevice")) return NULL;
+	//fprintf(stderr, "...className: %s\n", (const char *)className);
+	if (strcmp(className, "IOUSBDevice") != 0 && strcmp(className, "IOUSBHostDevice") != 0) return NULL;
 
 	// Device name
 	io_name_t deviceName;
-	IORegistryEntryGetName( usbDevice, deviceName );
-	// fprintf(stderr, "...deviceName: %s\n", (const char *)deviceName);
+	IORegistryEntryGetName(usbDevice, deviceName);
+	//fprintf(stderr, "...deviceName: %s\n", (const char *)deviceName);
 
 	// Wait for the mount point
 	CFStringRef bsdName = NULL;
@@ -146,7 +148,7 @@ static const char *findMount(io_service_t usbDevice)
 			char bsdNameBuf[4096];
 			sprintf(bsdNameBuf, "/dev/%ss1", cfStringRefToCString(bsdName));
 			const char *bsdNameC = &(bsdNameBuf[0]);
-			// printf("...bsd name: %s\n", bsdNameC);
+			//fprintf(stderr, "...bsd name: %s\n", bsdNameC);
 
 			DASessionRef daSession = DASessionCreate(kCFAllocatorDefault);
 			DADiskRef disk = DADiskCreateFromBSDName(kCFAllocatorDefault, daSession, bsdNameC);
@@ -170,7 +172,7 @@ static const char *findMount(io_service_t usbDevice)
 							// mounted volume
 							volumePath = malloc(4096);
 							sprintf(volumePath, "/Volumes/%s", volumeName);
-// printf("VOLUME: %s\n", volumePath);
+							//fprintf(stderr, "VOLUME: %s\n", volumePath);
 
 							CFRelease(desc);
 							break;
@@ -181,7 +183,7 @@ static const char *findMount(io_service_t usbDevice)
 						}
 					}
 					// wait for mounted volume
-					// printf(".");
+					//fprintf(stderr, ".");
 					usleep(100 * 1000);
 				}
 				CFRelease(disk);
@@ -296,6 +298,7 @@ const char *findSerial(const char *usbSerial)
 		}
 		char path[PATH_MAX];
 		Boolean result = CFStringGetCString(cf_property, path, sizeof(path), kCFStringEncodingASCII);
+		//fprintf(stderr, "path=%s\n", path);
 		CFRelease(cf_property);
 		if (!result)
 		{
@@ -305,13 +308,14 @@ const char *findSerial(const char *usbSerial)
 		}
 
 		char serial[128];
-		if ((cf_property = IORegistryEntrySearchCFProperty(ioport,kIOServicePlane, CFSTR("USB Serial Number"), kCFAllocatorDefault, kIORegistryIterateRecursively | kIORegistryIterateParents)))
+		if ((cf_property = IORegistryEntrySearchCFProperty(ioport, kIOServicePlane, CFSTR("USB Serial Number"), kCFAllocatorDefault, kIORegistryIterateRecursively | kIORegistryIterateParents)))
 		{
+			//fprintf(stderr, "serial=%s\n", serial);
 			if (CFStringGetCString(cf_property, serial, sizeof(serial), kCFStringEncodingASCII))
 			{
 				serialPath = malloc(PATH_MAX);
 				strcpy(serialPath, path);
-				// printf("DEVICE: Found serial number %s at path: %s\n", serial, path);
+				//fprintf(stderr, "DEVICE: Found serial number %s at path: %s\n", serial, path);
 				break;
 			}
 			CFRelease(cf_property);
