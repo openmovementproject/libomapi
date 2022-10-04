@@ -566,9 +566,9 @@ OM_EXPORT int OmGetEcc(int deviceId);
  * @note This method is not generally recommended -- incorrect results could lead to unspecified behaviour.
  * @param deviceId Identifier of the device.
  * @param command The command string to send (typically followed with CRLF).
- * @param[out] buffer A buffer to hold the response, or \a NULL if not required.
+ * @param[out] buffer A buffer to hold the response.
  * @param bufferSize The size (in bytes) of the output buffer.
- * @param expected The expected response prefix, or \a NULL if not specified (command will timeout if a response buffer is specified).
+ * @param expected The expected response prefix, or \a NULL if not specified (command will timeout).
  * @param timeoutMs The time, in milliseconds, after which the command will time-out and return.
  * @param[out] parseParts A buffer to hold the parsed response, or \a NULL if parsing is not required.
  * @param parseMax The maximum number of entries the \a parsePoints buffer can hold.
