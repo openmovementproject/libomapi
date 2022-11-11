@@ -123,19 +123,19 @@ static const char *findMount(io_service_t usbDevice)
 	char *volumePath = NULL;
 
 	// Check IOUSBDevice
-	//fprintf(stderr, "...usbDevice: %p\n", (void *)usbDevice);
+	OmLog(3, "MAC: usbDevice: %p\n", (void *)usbDevice);
 	if (!IOObjectConformsTo(usbDevice, "IOUSBDevice")) return NULL;
 
 	// Check is IOUSBDevice, or IOUSBHostDevice since El Capitan
 	io_name_t className;
 	IOObjectGetClass(usbDevice, className);
-	//fprintf(stderr, "...className: %s\n", (const char *)className);
+	OmLog(3, "MAC: ...className: %s\n", (const char *)className);
 	if (strcmp(className, "IOUSBDevice") != 0 && strcmp(className, "IOUSBHostDevice") != 0) return NULL;
 
 	// Device name
 	io_name_t deviceName;
 	IORegistryEntryGetName(usbDevice, deviceName);
-	//fprintf(stderr, "...deviceName: %s\n", (const char *)deviceName);
+	OmLog(3, "MAC: ...deviceName: %s\n", (const char *)deviceName);
 
 	// Wait for the mount point
 	CFStringRef bsdName = NULL;
@@ -148,7 +148,7 @@ static const char *findMount(io_service_t usbDevice)
 			char bsdNameBuf[4096];
 			sprintf(bsdNameBuf, "/dev/%ss1", cfStringRefToCString(bsdName));
 			const char *bsdNameC = &(bsdNameBuf[0]);
-			//fprintf(stderr, "...bsd name: %s\n", bsdNameC);
+			OmLog(3, "MAC: ...bsd name: %s\n", bsdNameC);
 
 			DASessionRef daSession = DASessionCreate(kCFAllocatorDefault);
 			DADiskRef disk = DADiskCreateFromBSDName(kCFAllocatorDefault, daSession, bsdNameC);
@@ -172,7 +172,7 @@ static const char *findMount(io_service_t usbDevice)
 							// mounted volume
 							volumePath = malloc(4096);
 							sprintf(volumePath, "/Volumes/%s", volumeName);
-							//fprintf(stderr, "VOLUME: %s\n", volumePath);
+							OmLog(3, "MAC: ...volume: %s\n", volumePath);
 
 							CFRelease(desc);
 							break;
@@ -183,7 +183,7 @@ static const char *findMount(io_service_t usbDevice)
 						}
 					}
 					// wait for mounted volume
-					//fprintf(stderr, ".");
+					//OmLog(3, ".");
 					usleep(100 * 1000);
 				}
 				CFRelease(disk);
@@ -229,6 +229,24 @@ static const char *getUSBStringDescriptor(IOUSBDeviceInterface182 **usbDevice, U
 	return stringValue;
 }
 
+static unsigned int DeviceIdFromSerialNumber(const char *serialNumber)
+{
+	// Return the number found at the end of the string (0 if none)
+	bool inNumber = false;
+    unsigned int value = (unsigned int)-1;
+    const char *p;
+    for (p = serialNumber; *p != 0; p++)
+    {
+		if (*p >= '0' && *p <= '9')
+		{
+			if (!inNumber) { inNumber = true; value = 0; }
+			value = (10 * value) + (*p - '0');
+		}
+		else inNumber = false;
+    }
+    return value;
+}
+
 static const char *getUSBSerialNumber(io_service_t usbDevice)
 {
 	SInt32 score;
@@ -267,7 +285,7 @@ static const char *getUSBSerialNumber(io_service_t usbDevice)
 	return getUSBStringDescriptor(usbDevice182, snIdx);
 }
 
-
+// Find the serial port path for the specified USB serial ID string
 const char *findSerial(const char *usbSerial)
 {
 	char *serialPath = NULL;
@@ -298,7 +316,7 @@ const char *findSerial(const char *usbSerial)
 		}
 		char path[PATH_MAX];
 		Boolean result = CFStringGetCString(cf_property, path, sizeof(path), kCFStringEncodingASCII);
-		//fprintf(stderr, "path=%s\n", path);
+		//OmLog(3, "MAC: io path: %s\n", path);
 		CFRelease(cf_property);
 		if (!result)
 		{
@@ -307,16 +325,18 @@ const char *findSerial(const char *usbSerial)
 			continue;
 		}
 
-		char serial[128];
 		if ((cf_property = IORegistryEntrySearchCFProperty(ioport, kIOServicePlane, CFSTR("USB Serial Number"), kCFAllocatorDefault, kIORegistryIterateRecursively | kIORegistryIterateParents)))
 		{
-			//fprintf(stderr, "serial=%s\n", serial);
+			char serial[128];
 			if (CFStringGetCString(cf_property, serial, sizeof(serial), kCFStringEncodingASCII))
 			{
-				serialPath = malloc(PATH_MAX);
-				strcpy(serialPath, path);
-				//fprintf(stderr, "DEVICE: Found serial number %s at path: %s\n", serial, path);
-				break;
+				//OmLog(3, "MAC: ...compare serial: %s = %u\n", serial, usbSerial);
+				if (strcmp(serial, usbSerial) == 0) {
+					serialPath = malloc(PATH_MAX);
+					strcpy(serialPath, path);
+					OmLog(3, "MAC: Found serial number %s at path: %s\n", serial, path);
+					break;
+				}
 			}
 			CFRelease(cf_property);
 		}
@@ -327,26 +347,6 @@ const char *findSerial(const char *usbSerial)
 	return serialPath;
 }
 
-
-static unsigned int DeviceIdFromSerialNumber(const char *serialNumber)
-{
-	// Return the number found at the end of the string (0 if none)
-	bool inNumber = false;
-    unsigned int value = (unsigned int)-1;
-    const char *p;
-    for (p = serialNumber; *p != 0; p++)
-    {
-		if (*p >= '0' && *p <= '9')
-		{
-			if (!inNumber) { inNumber = true; value = 0; }
-			value = (10 * value) + (*p - '0');
-		}
-		else inNumber = false;
-    }
-    return value;
-}
-
-
 // Called on kIOGeneralInterest notification, look for kIOMessageServiceIsTerminated (IOMessage.h)
 static void DeviceNotification(void *refCon, io_service_t service, natural_t messageType, void *messageArgument)
 {
@@ -354,10 +354,10 @@ static void DeviceNotification(void *refCon, io_service_t service, natural_t mes
 	DeviceData *deviceData = (DeviceData *)refCon;
 	if (messageType == kIOMessageServiceIsTerminated)
 	{		
-		fprintf(stderr, "DEVICE: Removed %u\n", deviceData->deviceId);
-		// fprintf(stderr, "->deviceName: "); CFShow(deviceData->deviceName);
-		// fprintf(stderr, "->locationID: 0x%lx.\n", deviceData->locationID);
-		// fprintf(stderr, "->deviceId: 0x%x.\n", deviceData->deviceId);
+		OmLog(3, "MAC: Removed %u\n", deviceData->deviceId);
+		OmLog(3, "->deviceName: "); CFShow(deviceData->deviceName);
+		OmLog(3, "->locationID: 0x%lx.\n", deviceData->locationID);
+		OmLog(3, "->deviceId: 0x%x.\n", deviceData->deviceId);
 
 		// Call device removed
 		OmDeviceDiscovery(OM_DEVICE_REMOVED, deviceData->deviceId, deviceData->serialNumber, deviceData->serialDevice, deviceData->mountPath);
@@ -387,8 +387,8 @@ static void DeviceAdded(void *refCon, io_iterator_t iterator)
 		DeviceData *deviceData = NULL;
 		UInt32 locationID;
 		
-		printf("DEVICE: Added...\n");
-		
+		OmLog(3, "DEVICE: Added...\n");
+
 		// Store data relating to each device (service's name and location ID)
 		deviceData = malloc(sizeof(DeviceData));
 		bzero(deviceData, sizeof(DeviceData));
@@ -400,12 +400,12 @@ static void DeviceAdded(void *refCon, io_iterator_t iterator)
 			deviceName[0] = '\0';
 		}
 		deviceData->deviceName = CFStringCreateWithCString(kCFAllocatorDefault, deviceName, kCFStringEncodingASCII);
-		// fprintf(stderr, "->deviceName: "); CFShow(deviceData->deviceName);
+		// OmLog(3, "->deviceName: "); CFShow(deviceData->deviceName);
 		
-		#if 0
+		#if 1
 		io_name_t className;
 		IOObjectGetClass(usbDevice, className);
-		fprintf(stderr, "This device's className is %s\n", (const char*)className);
+		OmLog(3, "This device's className is %s\n", (const char*)className);
 		io_string_t pathName;
 		IORegistryEntryGetPath(usbDevice, kIOServicePlane, pathName);
 		printf("Device's path in IOService plane = %s\n", pathName);
@@ -440,7 +440,7 @@ static void DeviceAdded(void *refCon, io_iterator_t iterator)
 			continue;
 		}
 		deviceData->locationID = locationID;
-		// fprintf(stderr, "->locationID: 0x%lx.\n", deviceData->locationID);
+		// OmLog(3, "->locationID: 0x%lx.\n", deviceData->locationID);
 		
 		// Use IOServiceAddInterestNotification type kIOGeneralInterest for this device (removal).
 		kr = IOServiceAddInterestNotification(gNotifyPort, usbDevice, kIOGeneralInterest, DeviceNotification, deviceData, &(deviceData->notification));
@@ -482,10 +482,10 @@ static void DeviceAdded(void *refCon, io_iterator_t iterator)
 			fprintf(stderr, "ERROR: Couldn't find serial path.\n");
 			continue;
 		}
-		// printf("DEVICE: ...%s\n", deviceData->serialDevice);
+		// OmLog(3, "DEVICE: ...%s\n", deviceData->serialDevice);
 
 		// Call device connected
-		printf("DEVICE: ... %s (#%u) port=%s path=%s\n", deviceData->serialNumber, deviceData->deviceId, deviceData->serialDevice, deviceData->mountPath);
+		OmLog(3, "DEVICE: ... %s (#%u) port=%s path=%s\n", deviceData->serialNumber, deviceData->deviceId, deviceData->serialDevice, deviceData->mountPath);
 		OmDeviceDiscovery(OM_DEVICE_CONNECTED, deviceData->deviceId, deviceData->serialNumber, deviceData->serialDevice, deviceData->mountPath);
 		
 		// Release IOIteratorNext reference
@@ -526,7 +526,7 @@ static thread_return_t OmDeviceDiscoveryThread(void *arg)
 		long usbProduct = PID;
 		CFNumberRef numberRef;
 		
-		fprintf(stderr, "DEVICE: Looking for USB class instances VID=%04x PID=%04x...\n", (int)usbVendor, (int)usbProduct);
+		OmLog(3, "DEVICE: Looking for USB class instances VID=%04x PID=%04x...\n", (int)usbVendor, (int)usbProduct);
 		
 		// ...vendor id
 		numberRef = CFNumberCreate(kCFAllocatorDefault, kCFNumberSInt32Type, &usbVendor);
@@ -557,7 +557,7 @@ static thread_return_t OmDeviceDiscoveryThread(void *arg)
 	DeviceAdded(NULL, gAddedIter);	
 
 	// Signal finished
-	fprintf(stderr, "DEVICE: Signalling...\n");
+	OmLog(3, "DEVICE: Signalling...\n");
 	pthread_mutex_lock(&gStartMutex);
 	gStarted = 1;
 	pthread_cond_signal(&gStartCond);
@@ -565,10 +565,10 @@ static thread_return_t OmDeviceDiscoveryThread(void *arg)
 
 	// while (!om.quitDiscoveryThread)
 	// Start the run loop, we will receive notifications
-	fprintf(stderr, "DEVICE: Starting run loop...\n");
+	OmLog(3, "DEVICE: Starting run loop...\n");
 	CFRunLoopRun();
 	
-	fprintf(stderr, "DEVICE: Run loop returned\n");
+	OmLog(3, "DEVICE: Run loop returned\n");
     return thread_return_value(0);
 }
 
@@ -591,7 +591,7 @@ void OmDeviceDiscoveryStart(void)
 	// Wait for event indicating the run loop is starting
     while (!gStarted)
 	{
-		fprintf(stderr, "DEVICE: Waiting...%d\n", gStarted);
+		OmLog(3, "DEVICE: Waiting...%d\n", gStarted);
         pthread_cond_wait(&gStartCond, &gStartMutex);
 	}
     pthread_mutex_unlock(&gStartMutex);	
@@ -599,14 +599,14 @@ void OmDeviceDiscoveryStart(void)
 	// HACK: Delay a fraction to ensure the run loop really starts
 	usleep(200 * 1000);
 
-	fprintf(stderr, "DEVICE: Started...\n");
+	OmLog(3, "DEVICE: Started...\n");
 }
 
 /** Internal method to stop device discovery. */
 void OmDeviceDiscoveryStop(void)
 {
     om.quitDiscoveryThread = 1;
-	fprintf(stderr, "DEVICE: Stopping run loop...\n");
+	OmLog(3, "DEVICE: Stopping run loop...\n");
     CFRunLoopStop(gRunLoop);
     pthread_cancel(om.discoveryThread);     // thread_join(&om.discoveryThread, NULL);
 }
