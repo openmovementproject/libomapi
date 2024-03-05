@@ -214,7 +214,7 @@ static const char *getUSBStringDescriptor(IOUSBDeviceInterface182 **usbDevice, U
 	kern_return_t err = (*usbDevice)->DeviceRequest(usbDevice, &request);
 	if (err != 0) 
 	{
-		fprintf(stderr, "ERROR: DeviceRequest failed.\n");
+		OmLog(2, "ERROR: DeviceRequest failed.\n");
 		return NULL;
 	}
   
@@ -256,14 +256,14 @@ static const char *getUSBSerialNumber(io_service_t usbDevice)
 	err = IOCreatePlugInInterfaceForService(usbDevice, kIOUSBDeviceUserClientTypeID, kIOCFPlugInInterfaceID, &plugin, &score);
 	if (err != 0) 
 	{
-		fprintf(stderr, "ERROR: IOCreatePlugInInterfaceForService failed.\n");
+		OmLog(2, "ERROR: IOCreatePlugInInterfaceForService failed.\n");
 		return NULL;
 	}
 	err = (*plugin)->QueryInterface(plugin, CFUUIDGetUUIDBytes(kIOUSBDeviceInterfaceID182), (void **)&usbDevice182);
 	IODestroyPlugInInterface(plugin);
 	if (err != 0) 
 	{
-		fprintf(stderr, "ERROR: IODestroyPlugInInterface failed.\n");
+		OmLog(2, "ERROR: IODestroyPlugInInterface failed.\n");
 		return NULL;
 	}
 
@@ -293,14 +293,14 @@ const char *findSerial(const char *usbSerial)
 	CFMutableDictionaryRef classes;
 	if (!(classes = IOServiceMatching(kIOSerialBSDServiceValue)))
 	{
-		fprintf(stderr, "ERROR: IOServiceMatching failed.\n");
+		OmLog(2, "ERROR: IOServiceMatching failed.\n");
 		return NULL;
 	}
 
 	io_iterator_t iter;
 	if (IOServiceGetMatchingServices(kIOMasterPortDefault, classes, &iter) != KERN_SUCCESS)
 	{
-		fprintf(stderr, "ERROR: IOServiceGetMatchingServices failed.\n");
+		OmLog(2, "ERROR: IOServiceGetMatchingServices failed.\n");
 		return NULL;
 	}
 
@@ -310,7 +310,7 @@ const char *findSerial(const char *usbSerial)
 		CFTypeRef cf_property;
 		if (!(cf_property = IORegistryEntryCreateCFProperty(ioport, CFSTR(kIOCalloutDeviceKey), kCFAllocatorDefault, 0)))
 		{
-			fprintf(stderr, "WARNING: IORegistryEntryCreateCFProperty failed.\n");
+			OmLog(2, "WARNING: IORegistryEntryCreateCFProperty failed.\n");
 			IOObjectRelease(ioport);
 			continue;
 		}
@@ -320,7 +320,7 @@ const char *findSerial(const char *usbSerial)
 		CFRelease(cf_property);
 		if (!result)
 		{
-			fprintf(stderr, "WARNING: CFStringGetCString failed.\n");
+			OmLog(2, "WARNING: CFStringGetCString failed.\n");
 			IOObjectRelease(ioport);
 			continue;
 		}
@@ -354,7 +354,7 @@ static void DeviceNotification(void *refCon, io_service_t service, natural_t mes
 	DeviceData *deviceData = (DeviceData *)refCon;
 	if (messageType == kIOMessageServiceIsTerminated)
 	{		
-		OmLog(3, "MAC: Removed %u\n", deviceData->deviceId);
+		OmLog(2, "MAC: Removed %u\n", deviceData->deviceId);
 		OmLog(3, "->deviceName: "); CFShow(deviceData->deviceName);
 		OmLog(3, "->locationID: 0x%lx.\n", deviceData->locationID);
 		OmLog(3, "->deviceId: 0x%x.\n", deviceData->deviceId);
@@ -383,111 +383,129 @@ static void DeviceAdded(void *refCon, io_iterator_t iterator)
 	
 	while ((usbDevice = IOIteratorNext(iterator)))
 	{
-		io_name_t deviceName;
-		DeviceData *deviceData = NULL;
-		UInt32 locationID;
-		
-		OmLog(3, "DEVICE: Added...\n");
+		OmLog(2, "DEVICE: Added...\n");
 
 		// Store data relating to each device (service's name and location ID)
-		deviceData = malloc(sizeof(DeviceData));
-		bzero(deviceData, sizeof(DeviceData));
-		
-		// Get the device name
-		kr = IORegistryEntryGetName(usbDevice, deviceName);
-		if (KERN_SUCCESS != kr)
+		DeviceData *deviceData = malloc(sizeof(DeviceData));
+		if (deviceData == NULL)
 		{
-			deviceName[0] = '\0';
+			OmLog(2, "MAC: Problem allocating device data\n");
+			continue;
 		}
-		deviceData->deviceName = CFStringCreateWithCString(kCFAllocatorDefault, deviceName, kCFStringEncodingASCII);
-		// OmLog(3, "->deviceName: "); CFShow(deviceData->deviceName);
 		
-		#if 1
-		io_name_t className;
-		IOObjectGetClass(usbDevice, className);
-		OmLog(3, "This device's className is %s\n", (const char*)className);
-		io_string_t pathName;
-		IORegistryEntryGetPath(usbDevice, kIOServicePlane, pathName);
-		printf("Device's path in IOService plane = %s\n", pathName);
-		IORegistryEntryGetPath(usbDevice, kIOUSBPlane, pathName);
-		printf("Device's path in IOUSB plane = %s\n", pathName);
-		#endif
+		// A scope for better failure handling
+		do {
+			bzero(deviceData, sizeof(DeviceData));
 
-		// Create an IOUSBDeviceInterface to get the location ID (connection between application and USB device kernel object)
-		kr = IOCreatePlugInInterfaceForService(usbDevice, kIOUSBDeviceUserClientTypeID, kIOCFPlugInInterfaceID, &plugInInterface, &score);
-		if ((kIOReturnSuccess != kr) || !plugInInterface)
-		{
-			fprintf(stderr, "ERROR: IOCreatePlugInInterfaceForService returned 0x%08x.\n", kr);
-			continue;
-		}
-		
-		// Retrieve the device interface
-		res = (*plugInInterface)->QueryInterface(plugInInterface, CFUUIDGetUUIDBytes(kIOUSBDeviceInterfaceID), (LPVOID*) &deviceData->deviceInterface);
-		
-		// Release plugin interface
-		(*plugInInterface)->Release(plugInInterface);
-		if (res || deviceData->deviceInterface == NULL)
-		{
-			fprintf(stderr, "ERROR: QueryInterface returned %d.\n", (int) res);
-			continue;
-		}
-		
-		// Routines from IOUSBLib.h can be called wiht the IOUSBDeviceInterface
-		kr = (*deviceData->deviceInterface)->GetLocationID(deviceData->deviceInterface, &locationID);
-		if (KERN_SUCCESS != kr)
-		{
-			fprintf(stderr, "ERROR: GetLocationID returned 0x%08x.\n", kr);
-			continue;
-		}
-		deviceData->locationID = locationID;
-		// OmLog(3, "->locationID: 0x%lx.\n", deviceData->locationID);
-		
-		// Use IOServiceAddInterestNotification type kIOGeneralInterest for this device (removal).
-		kr = IOServiceAddInterestNotification(gNotifyPort, usbDevice, kIOGeneralInterest, DeviceNotification, deviceData, &(deviceData->notification));
-		if (KERN_SUCCESS != kr)
-		{
-			printf("WARNING: IOServiceAddInterestNotification returned 0x%08x.\n", kr);
+			// Get the device name
+			io_name_t deviceName = {0};
+			kr = IORegistryEntryGetName(usbDevice, deviceName);
+			if (KERN_SUCCESS != kr)
+			{
+				OmLog(2, "MAC: IORegistryEntryGetName returned 0x%08x\n", kr);
+				break;
+			}
+			deviceData->deviceName = CFStringCreateWithCString(kCFAllocatorDefault, deviceName, kCFStringEncodingASCII);
+			OmLog(3, "->deviceName: %s\n", deviceName);
+			
+			#if 1	// additional trace information about the device
+			io_name_t className = {0};
+			io_string_t pathName = {0};
+			io_string_t pathName2 = {0};
+
+			IOObjectGetClass(usbDevice, className);
+			IORegistryEntryGetPath(usbDevice, kIOServicePlane, pathName);
+			IORegistryEntryGetPath(usbDevice, kIOUSBPlane, pathName2);
+
+			OmLog(3, "MAC: This device's className is %s\n", (const char*)className);
+			OmLog(3, "MAC: Device's path in IOService plane = %s\n", pathName);
+			OmLog(3, "MAC: Device's path in IOUSB plane = %s\n", pathName2);
+			#endif
+
+			// Create an IOUSBDeviceInterface to get the location ID (connection between application and USB device kernel object)
+			kr = IOCreatePlugInInterfaceForService(usbDevice, kIOUSBDeviceUserClientTypeID, kIOCFPlugInInterfaceID, &plugInInterface, &score);
+			if ((kIOReturnSuccess != kr) || !plugInInterface)
+			{
+				OmLog(2, "MAC: IOCreatePlugInInterfaceForService returned 0x%08x\n", kr);
+				break;
+			}
+			
+			// Retrieve the device interface
+			res = (*plugInInterface)->QueryInterface(plugInInterface, CFUUIDGetUUIDBytes(kIOUSBDeviceInterfaceID), (LPVOID*) &deviceData->deviceInterface);
+			
+			// Release plugin interface
+			(*plugInInterface)->Release(plugInInterface);
+			if (res || deviceData->deviceInterface == NULL)
+			{
+				OmLog(2, "MAC: ERROR: QueryInterface returned %d.\n", (int) res);
+				break;
+			}
+			
+			// Routines from IOUSBLib.h can be called with the IOUSBDeviceInterface
+			UInt32 locationID;
+			kr = (*deviceData->deviceInterface)->GetLocationID(deviceData->deviceInterface, &locationID);
+			if (KERN_SUCCESS != kr)
+			{
+				OmLog(2, "MAC: ERROR: GetLocationID returned 0x%08x.\n", kr);
+				break;
+			}
+			deviceData->locationID = locationID;
+			OmLog(3, "->locationID: 0x%lx.\n", deviceData->locationID);
+			
+			// Use IOServiceAddInterestNotification type kIOGeneralInterest for this device (removal).
+			kr = IOServiceAddInterestNotification(gNotifyPort, usbDevice, kIOGeneralInterest, DeviceNotification, deviceData, &(deviceData->notification));
+			if (KERN_SUCCESS != kr)
+			{
+				OmLog(2, "MAC: WARNING: IOServiceAddInterestNotification returned 0x%08x.\n", kr);
+				break;
+			}
+
+			// printf("DEVICE: Find serial number...\n");
+			deviceData->serialNumber = getUSBSerialNumber(usbDevice);
+			if (deviceData->serialNumber == NULL || strlen(deviceData->serialNumber) == 0)
+			{
+				OmLog(2, "MAC: ERROR: Couldn't find USB serial number.\n");
+				break;
+			}
+			OmLog(3, "->serialNumber: %s\n", deviceData->serialNumber);
+
+			deviceData->deviceId = DeviceIdFromSerialNumber(deviceData->serialNumber);
+			if (deviceData->deviceId <= 0)
+			{
+				OmLog(2, "MAC: ERROR: Couldn't find device ID from USB serial number.\n");
+				break;
+			}
+			OmLog(3, "->deviceId: %u\n", deviceData->deviceId);
+			
+			deviceData->mountPath = findMount(usbDevice);
+			if (deviceData->mountPath == NULL || strlen(deviceData->mountPath) == 0)
+			{
+				OmLog(2, "MAC: ERROR: Couldn't find mount path.\n");
+				break;
+			}
+			OmLog(3, "->mountPath: %s\n", deviceData->mountPath);
+			
+			deviceData->serialDevice = findSerial(deviceData->serialNumber);
+			if (deviceData->serialDevice == NULL || strlen(deviceData->serialDevice) == 0)
+			{
+				OmLog(2, "MAC: ERROR: Couldn't find serial path.\n");
+				break;
+			}
+			OmLog(3, "->serialDevice: %s\n", deviceData->serialDevice);
+
+			// Call device connected
+			OmLog(2, "MAC: DEVICE: ... %s (#%u) port=%s path=%s\n", deviceData->serialNumber, deviceData->deviceId, deviceData->serialDevice, deviceData->mountPath);
+			OmDeviceDiscovery(OM_DEVICE_CONNECTED, deviceData->deviceId, deviceData->serialNumber, deviceData->serialDevice, deviceData->mountPath);
+			deviceData = NULL;	// clear reference to prevent freeing below
+		} while (0);
+
+		// We still have a reference if there was an issue
+		if (deviceData) {
+			OmLog(2, "MAC: ERROR: Overall problem determining device information.\n");
+			fprintf(stderr, "ERROR: Overall problem determining device information. (Run with OMDEBUG=2 for details).\n");
+			free(deviceData);
 		}
 
-		// printf("DEVICE: Find serial number...\n");
-		deviceData->serialNumber = getUSBSerialNumber(usbDevice);
-		if (deviceData->serialNumber == NULL || strlen(deviceData->serialNumber) == 0)
-		{
-			fprintf(stderr, "ERROR: Couldn't find USB serial number.\n");
-			continue;
-		}
-		// printf("DEVICE: ...%s\n", deviceData->serialNumber);
-
-		deviceData->deviceId = DeviceIdFromSerialNumber(deviceData->serialNumber);
-		if (deviceData->deviceId <= 0)
-		{
-			fprintf(stderr, "ERROR: Couldn't find device ID from USB serial number.\n");
-			continue;
-		}
-		// printf("DEVICE: ...%u\n", deviceData->deviceId);
-		
-		// printf("DEVICE: Find mount...\n");
-		deviceData->mountPath = findMount(usbDevice);
-		if (deviceData->mountPath == NULL || strlen(deviceData->mountPath) == 0)
-		{
-			fprintf(stderr, "ERROR: Couldn't find mount path.\n");
-			continue;
-		}
-		// printf("DEVICE: ...%s\n", deviceData->mountPath);
-		
-		// printf("DEVICE: Find serial device...\n");
-		deviceData->serialDevice = findSerial(deviceData->serialNumber);
-		if (deviceData->serialDevice == NULL || strlen(deviceData->serialDevice) == 0)
-		{
-			fprintf(stderr, "ERROR: Couldn't find serial path.\n");
-			continue;
-		}
-		// OmLog(3, "DEVICE: ...%s\n", deviceData->serialDevice);
-
-		// Call device connected
-		OmLog(3, "DEVICE: ... %s (#%u) port=%s path=%s\n", deviceData->serialNumber, deviceData->deviceId, deviceData->serialDevice, deviceData->mountPath);
-		OmDeviceDiscovery(OM_DEVICE_CONNECTED, deviceData->deviceId, deviceData->serialNumber, deviceData->serialDevice, deviceData->mountPath);
-		
 		// Release IOIteratorNext reference
 		kr = IOObjectRelease(usbDevice);
 	}
@@ -496,8 +514,10 @@ static void DeviceAdded(void *refCon, io_iterator_t iterator)
 // Handle program interrupt (e.g. Ctrl-C)
 void SignalHandler(int sigraised)
 {
+	OmLog(2, "DEVICE: Interrupted.\n");
 	fprintf(stderr, "DEVICE: Interrupted.\n");
-	// TODO: Not in this file?
+	
+	// TODO: Move this to a handler in the library
 	exit(0);
 }
 
@@ -511,12 +531,16 @@ static thread_return_t OmDeviceDiscoveryThread(void *arg)
 	// Set signal handler
 	{
 		sig_t oldHandler = signal(SIGINT, SignalHandler);
-		if (oldHandler == SIG_ERR) { fprintf(stderr, "WARNING: Could not set signal handler."); }
+		if (oldHandler == SIG_ERR) {
+			OmLog(2, "WARNING: Could not set signal handler.\n");
+			fprintf(stderr, "WARNING: Could not set signal handler.\n");
+		}
 	}
 	
 	CFMutableDictionaryRef matchingDict = IOServiceMatching(kIOUSBDeviceClassName);
 	if (matchingDict == NULL)
 	{
+		OmLog(2, "ERROR: IOServiceMatching returned NULL.\n");
 		fprintf(stderr, "ERROR: IOServiceMatching returned NULL.\n");
 	}
 	
@@ -550,6 +574,7 @@ static thread_return_t OmDeviceDiscoveryThread(void *arg)
 	kern_return_t kr = IOServiceAddMatchingNotification(gNotifyPort, kIOFirstMatchNotification,	matchingDict, DeviceAdded, NULL, &gAddedIter);
 	if (KERN_SUCCESS != kr)
 	{
+		OmLog(2, "ERROR: IOServiceAddMatchingNotification failed\n");
 		fprintf(stderr, "WARNING: IOServiceAddMatchingNotification failed\n");
 	}
 	
