@@ -49,6 +49,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
+#include <sys/sysctl.h>
 #include <errno.h>
 #include <paths.h>
 #include <sys/param.h>
@@ -90,6 +91,23 @@ static IONotificationPortRef gNotifyPort;
 static io_iterator_t gAddedIter;
 static CFRunLoopRef gRunLoop;
 
+// Get the OS version (AA.BB.CC) as a single number (digits AABBCC)
+static unsigned int osVersion()
+{
+	int name[] = { CTL_KERN, KERN_OSRELEASE };
+	char versionString[64];
+	size_t versionStringLen = sizeof(versionString) - 1;
+	if (sysctl(name, sizeof(name)/sizeof(name[0]), versionString, &versionStringLen, NULL, 0) != 0) return 0;
+	uint32_t major = 0, minor = 0;
+	if (sscanf(versionString, "%u.%u", &major, &minor) != 2) return 0;
+	if (minor > 99) minor = 99;
+	if (major >= 20) {	// macOS 11+
+		return ((major - 9) * 100 + minor) * 100;
+	} else if (major >= 5) {	// macOS 10.1.1+
+		return (10 * 100 + (major - 4)) * 100 + minor;
+	}
+	return 0;
+}
 
 static char *cfStringRefToCString(CFStringRef cfString)
 {
@@ -537,11 +555,20 @@ static thread_return_t OmDeviceDiscoveryThread(void *arg)
 		}
 	}
 	
-	CFMutableDictionaryRef matchingDict = IOServiceMatching(kIOUSBDeviceClassName);
+	// See: https://stackoverflow.com/questions/33181669/osx-workaround-for-getting-bsd-name-of-an-iousbdevice
+	unsigned int currentVersion = osVersion();
+	unsigned int maxVersion = __MAC_OS_X_VERSION_MAX_ALLOWED;
+	unsigned int versionElCapitan = 101100; // "El Capitan" (AvailabilityInternal.h)
+	// "IOUSBDevice" -> "IOUSBHostDevice"
+	const char *serviceMatcher = (currentVersion < versionElCapitan || maxVersion < versionElCapitan) ? "IOUSBDevice" : "IOUSBHostDevice";
+	OmLog(2, "MAC: NOTE: currentVersion=%u, maxVersion=%u, elCapitan=%u, serviceMatched=%s\n", currentVersion, maxVersion, versionElCapitan, serviceMatcher);
+
+	CFMutableDictionaryRef matchingDict = IOServiceMatching(serviceMatcher);		// kIOUSBDeviceClassName="IOUSBDevice"
 	if (matchingDict == NULL)
 	{
 		OmLog(2, "ERROR: IOServiceMatching returned NULL.\n");
 		fprintf(stderr, "ERROR: IOServiceMatching returned NULL.\n");
+		return thread_return_value(1);
 	}
 	
 	// Register interest in all USB devices that match the vid/pid
@@ -574,7 +601,7 @@ static thread_return_t OmDeviceDiscoveryThread(void *arg)
 	kern_return_t kr = IOServiceAddMatchingNotification(gNotifyPort, kIOFirstMatchNotification,	matchingDict, DeviceAdded, NULL, &gAddedIter);
 	if (KERN_SUCCESS != kr)
 	{
-		OmLog(2, "ERROR: IOServiceAddMatchingNotification failed\n");
+		OmLog(2, "WARNING: IOServiceAddMatchingNotification failed\n");
 		fprintf(stderr, "WARNING: IOServiceAddMatchingNotification failed\n");
 	}
 	
