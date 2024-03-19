@@ -5,3 +5,4 @@
 /.vs
 /bindings/java/c/openmovement
 /bindings/java/jni
+.DS_Store

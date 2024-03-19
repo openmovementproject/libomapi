@@ -203,10 +203,14 @@ int test(char wait)
 		 * (Production code wouldn't typically use OmGetDeviceIds but would instead work asynchronously with OmDeviceCallback) */
 		if (result < numDevices) { numDevices = result; } 
 	  
+		if (numDevices == 0) {
+			printf("TEST: No devices found.\n");
+		}
+
 		/* For each device currently connected... */
 		for (i = 0; i < numDevices; i++)
 		{
-			printf("TEST #%d: Device already CONNECTED\n", deviceIds[i]);
+			printf("TEST %d/%d #%d: Device already CONNECTED\n", i + 1, numDevices, deviceIds[i]);
 			testDevice(deviceIds[i]);
 		}
 

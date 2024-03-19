@@ -13,6 +13,7 @@ ifneq ($(OS),Windows_NT)
 		LIBS += -ludev
 	endif
 	ifeq ($(UNAME_S),Darwin)
+		# -framework CoreFoundation
 		LIBS += -framework Cocoa -framework IOKit -framework DiskArbitration
 	endif
 endif
@@ -21,4 +22,7 @@ omapi-examples : ../src/libomapi.a $(CFILES)
 	$(CC) $(CFLAGS) $(INCLUDES) $(CFILES) -o omapi-examples -L. $(LIBS) 
 
 ../src/libomapi.a : ../src/*.c ../src/*.h
-	make -C ../src  # (cd ../src && make)
+	make -C ../src
+
+clean:
+	rm -f *.o omapi-examples
