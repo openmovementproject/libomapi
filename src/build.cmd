@@ -13,7 +13,8 @@ ECHO Build tools not on path, looking for 'vcvarsall.bat'...
 SET ARCH=x86
 SET VCVARSALL=
 FOR %%f IN (70 71 80 90 100 110 120 130 140) DO IF EXIST "!VS%%fCOMNTOOLS!\..\..\VC\vcvarsall.bat" SET VCVARSALL=!VS%%fCOMNTOOLS!\..\..\VC\vcvarsall.bat
-FOR /F "usebackq tokens=*" %%f IN (`DIR /B /ON "%ProgramFiles(x86)%\Microsoft Visual Studio\????"`) DO FOR %%g IN (Community Professional Enterprise) DO IF EXIST "%ProgramFiles(x86)%\Microsoft Visual Studio\%%f\%%g\VC\Auxiliary\Build\vcvarsall.bat" SET "VCVARSALL=%ProgramFiles(x86)%\Microsoft Visual Studio\%%f\%%g\VC\Auxiliary\Build\vcvarsall.bat"
+FOR /F "usebackq tokens=*" %%f IN (`DIR /B /ON "%ProgramFiles(x86)%\Microsoft Visual Studio\????"`) DO FOR %%g IN (BuildTools Community Professional Enterprise) DO IF EXIST "%ProgramFiles(x86)%\Microsoft Visual Studio\%%f\%%g\VC\Auxiliary\Build\vcvarsall.bat" SET "VCVARSALL=%ProgramFiles(x86)%\Microsoft Visual Studio\%%f\%%g\VC\Auxiliary\Build\vcvarsall.bat"
+FOR /F "usebackq tokens=*" %%f IN (`DIR /B /ON "%ProgramFiles%\Microsoft Visual Studio\????"`) DO FOR %%g IN (BuildTools Community Professional Enterprise) DO IF EXIST "%ProgramFiles%\Microsoft Visual Studio\%%f\%%g\VC\Auxiliary\Build\vcvarsall.bat" SET "VCVARSALL=%ProgramFiles%\Microsoft Visual Studio\%%f\%%g\VC\Auxiliary\Build\vcvarsall.bat"
 IF "%VCVARSALL%"=="" ECHO Cannot find C compiler environment for 'vcvarsall.bat'. & GOTO ERROR
 ECHO Setting environment variables for C compiler... %VCVARSALL%
 CALL "%VCVARSALL%" %ARCH%
@@ -55,14 +56,23 @@ FOR /F "usebackq tokens=1,4 delims= " %%F IN (`dumpbin /exports libomapi.dll ^| 
   ECHO.  %%G>>libomapi.def
 )
 lib /def:libomapi.def /out:libomapi.lib /machine:%ARCH%
-rem dumpbin /EXPORTS libomapi.lib
-rem dumpbin /LINKERMEMBER libomapi.lib
 IF ERRORLEVEL 1 GOTO ERROR
 
+rem echo --- libomapi.dll exports ---
+rem dumpbin /EXPORTS libomapi.dll
+rem echo ---------
+rem echo --- libomapi.lib exports ---
+rem dumpbin /EXPORTS libomapi.lib
+rem echo ---------
+rem echo --- libomapi.lib linker members ---
+rem dumpbin /LINKERMEMBER libomapi.lib
+rem echo ---------
+
 :TEST
-ECHO Building test program...
-cl /EHsc /DOMAPI_DYNLIB_IMPORT /Dtest_main=main /I"..\include" /Tc"..\examples\test.c"
+ECHO Compiling test program...
+cl /c /EHsc /DOMAPI_DYNLIB_IMPORT /Dtest_main=main /I"..\include" /Tc"..\examples\test.c"
 IF ERRORLEVEL 1 GOTO ERROR
+ECHO Linking test program...
 link /out:test.exe test libomapi.lib
 IF ERRORLEVEL 1 GOTO ERROR
 GOTO END
