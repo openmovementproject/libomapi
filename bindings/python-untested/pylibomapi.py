@@ -1,7 +1,7 @@
 r"""Wrapper for omapi.h
 
 Generated with:
-ctypesgen/run.py -a -l ../../src/libomapi.a -o pylibomapi.py ../../include/omapi.h
+ctypesgen/run.py -a -lomapi -o pylibomapi.py ../../include/omapi.h
 
 Do not modify this file.
 """
@@ -333,7 +333,6 @@ class MutableString(UserString):
 
 
 class String(MutableString, ctypes.Union):
-
     _fields_ = [("raw", ctypes.POINTER(ctypes.c_char)), ("data", ctypes.c_char_p)]
 
     def __init__(self, obj=b""):
@@ -816,7 +815,7 @@ class PosixLibraryLoader(LibraryLoader):
 class WindowsLibraryLoader(LibraryLoader):
     """Library loader for Microsoft Windows"""
 
-    name_formats = ["%s.dll", "lib%s.dll", "%slib.dll", "%s"]
+    name_formats = ["%s.dll", "lib%s.dll", "lib%s64.dll", "%slib.dll", "%s"]
 
     class Lookup(LibraryLoader.Lookup):
         """Lookup class for Windows libraries..."""
@@ -860,7 +859,7 @@ del loaderclass
 add_library_search_dirs([])
 
 # Begin libraries
-_libs["../../src/libomapi.a"] = load_library("../../src/libomapi.a")
+_libs["omapi"] = load_library("omapi")
 
 # 1 libraries
 # End libraries
@@ -929,75 +928,108 @@ struct_anon_4._fields_ = [
 lldiv_t = struct_anon_4# /usr/include/stdlib.h: 80
 
 # /usr/include/stdlib.h: 97
-for _lib in _libs.values():
-    if not _lib.has("__ctype_get_mb_cur_max", "cdecl"):
-        continue
-    __ctype_get_mb_cur_max = _lib.get("__ctype_get_mb_cur_max", "cdecl")
+if _libs["omapi"].has("__ctype_get_mb_cur_max", "cdecl"):
+    __ctype_get_mb_cur_max = _libs["omapi"].get("__ctype_get_mb_cur_max", "cdecl")
     __ctype_get_mb_cur_max.argtypes = []
     __ctype_get_mb_cur_max.restype = c_size_t
-    break
 
 # /usr/include/stdlib.h: 101
-for _lib in _libs.values():
-    if not _lib.has("atof", "cdecl"):
-        continue
-    atof = _lib.get("atof", "cdecl")
+if _libs["omapi"].has("atof", "cdecl"):
+    atof = _libs["omapi"].get("atof", "cdecl")
     atof.argtypes = [String]
     atof.restype = c_double
-    break
 
 # /usr/include/stdlib.h: 104
-for _lib in _libs.values():
-    if not _lib.has("atoi", "cdecl"):
-        continue
-    atoi = _lib.get("atoi", "cdecl")
+if _libs["omapi"].has("atoi", "cdecl"):
+    atoi = _libs["omapi"].get("atoi", "cdecl")
     atoi.argtypes = [String]
     atoi.restype = c_int
-    break
 
 # /usr/include/stdlib.h: 107
-for _lib in _libs.values():
-    if not _lib.has("atol", "cdecl"):
-        continue
-    atol = _lib.get("atol", "cdecl")
+if _libs["omapi"].has("atol", "cdecl"):
+    atol = _libs["omapi"].get("atol", "cdecl")
     atol.argtypes = [String]
     atol.restype = c_long
-    break
 
 # /usr/include/stdlib.h: 112
-for _lib in _libs.values():
-    if not _lib.has("atoll", "cdecl"):
-        continue
-    atoll = _lib.get("atoll", "cdecl")
+if _libs["omapi"].has("atoll", "cdecl"):
+    atoll = _libs["omapi"].get("atoll", "cdecl")
     atoll.argtypes = [String]
     atoll.restype = c_longlong
-    break
+
+# /usr/include/stdlib.h: 117
+if _libs["omapi"].has("strtod", "cdecl"):
+    strtod = _libs["omapi"].get("strtod", "cdecl")
+    strtod.argtypes = [String, POINTER(POINTER(c_char))]
+    strtod.restype = c_double
+
+# /usr/include/stdlib.h: 123
+if _libs["omapi"].has("strtof", "cdecl"):
+    strtof = _libs["omapi"].get("strtof", "cdecl")
+    strtof.argtypes = [String, POINTER(POINTER(c_char))]
+    strtof.restype = c_float
+
+# /usr/include/stdlib.h: 126
+if _libs["omapi"].has("strtold", "cdecl"):
+    strtold = _libs["omapi"].get("strtold", "cdecl")
+    strtold.argtypes = [String, POINTER(POINTER(c_char))]
+    strtold.restype = c_longdouble
+
+# /usr/include/stdlib.h: 176
+if _libs["omapi"].has("strtol", "cdecl"):
+    strtol = _libs["omapi"].get("strtol", "cdecl")
+    strtol.argtypes = [String, POINTER(POINTER(c_char)), c_int]
+    strtol.restype = c_long
+
+# /usr/include/stdlib.h: 180
+if _libs["omapi"].has("strtoul", "cdecl"):
+    strtoul = _libs["omapi"].get("strtoul", "cdecl")
+    strtoul.argtypes = [String, POINTER(POINTER(c_char)), c_int]
+    strtoul.restype = c_ulong
+
+# /usr/include/stdlib.h: 187
+if _libs["omapi"].has("strtoq", "cdecl"):
+    strtoq = _libs["omapi"].get("strtoq", "cdecl")
+    strtoq.argtypes = [String, POINTER(POINTER(c_char)), c_int]
+    strtoq.restype = c_longlong
+
+# /usr/include/stdlib.h: 192
+if _libs["omapi"].has("strtouq", "cdecl"):
+    strtouq = _libs["omapi"].get("strtouq", "cdecl")
+    strtouq.argtypes = [String, POINTER(POINTER(c_char)), c_int]
+    strtouq.restype = c_ulonglong
+
+# /usr/include/stdlib.h: 200
+if _libs["omapi"].has("strtoll", "cdecl"):
+    strtoll = _libs["omapi"].get("strtoll", "cdecl")
+    strtoll.argtypes = [String, POINTER(POINTER(c_char)), c_int]
+    strtoll.restype = c_longlong
+
+# /usr/include/stdlib.h: 205
+if _libs["omapi"].has("strtoull", "cdecl"):
+    strtoull = _libs["omapi"].get("strtoull", "cdecl")
+    strtoull.argtypes = [String, POINTER(POINTER(c_char)), c_int]
+    strtoull.restype = c_ulonglong
 
 # /usr/include/stdlib.h: 385
-for _lib in _libs.values():
-    if not _lib.has("l64a", "cdecl"):
-        continue
-    l64a = _lib.get("l64a", "cdecl")
+if _libs["omapi"].has("l64a", "cdecl"):
+    l64a = _libs["omapi"].get("l64a", "cdecl")
     l64a.argtypes = [c_long]
     if sizeof(c_int) == sizeof(c_void_p):
         l64a.restype = ReturnString
     else:
         l64a.restype = String
         l64a.errcheck = ReturnString
-    break
 
 # /usr/include/stdlib.h: 388
-for _lib in _libs.values():
-    if not _lib.has("a64l", "cdecl"):
-        continue
-    a64l = _lib.get("a64l", "cdecl")
+if _libs["omapi"].has("a64l", "cdecl"):
+    a64l = _libs["omapi"].get("a64l", "cdecl")
     a64l.argtypes = [String]
     a64l.restype = c_long
-    break
 
 __u_char = c_ubyte# /usr/include/x86_64-linux-gnu/bits/types.h: 31
 
-__u_short = c_uint# /usr/include/x86_64-linux-gnu/bits/types.h: 32
+__u_short = c_ushort# /usr/include/x86_64-linux-gnu/bits/types.h: 32
 
 __u_int = c_uint# /usr/include/x86_64-linux-gnu/bits/types.h: 33
 
@@ -1007,9 +1039,9 @@ __int8_t = c_char# /usr/include/x86_64-linux-gnu/bits/types.h: 37
 
 __uint8_t = c_ubyte# /usr/include/x86_64-linux-gnu/bits/types.h: 38
 
-__int16_t = c_int# /usr/include/x86_64-linux-gnu/bits/types.h: 39
+__int16_t = c_short# /usr/include/x86_64-linux-gnu/bits/types.h: 39
 
-__uint16_t = c_uint# /usr/include/x86_64-linux-gnu/bits/types.h: 40
+__uint16_t = c_ushort# /usr/include/x86_64-linux-gnu/bits/types.h: 40
 
 __int32_t = c_int# /usr/include/x86_64-linux-gnu/bits/types.h: 41
 
@@ -1019,19 +1051,19 @@ __int64_t = c_long# /usr/include/x86_64-linux-gnu/bits/types.h: 44
 
 __uint64_t = c_ulong# /usr/include/x86_64-linux-gnu/bits/types.h: 45
 
-__int_least8_t = __int8_t# /usr/include/x86_64-linux-gnu/bits/types.h: 52
+__int_least8_t = c_int8# /usr/include/x86_64-linux-gnu/bits/types.h: 52
 
 __uint_least8_t = __uint8_t# /usr/include/x86_64-linux-gnu/bits/types.h: 53
 
-__int_least16_t = __int16_t# /usr/include/x86_64-linux-gnu/bits/types.h: 54
+__int_least16_t = c_int16# /usr/include/x86_64-linux-gnu/bits/types.h: 54
 
 __uint_least16_t = __uint16_t# /usr/include/x86_64-linux-gnu/bits/types.h: 55
 
-__int_least32_t = __int32_t# /usr/include/x86_64-linux-gnu/bits/types.h: 56
+__int_least32_t = c_int32# /usr/include/x86_64-linux-gnu/bits/types.h: 56
 
 __uint_least32_t = __uint32_t# /usr/include/x86_64-linux-gnu/bits/types.h: 57
 
-__int_least64_t = __int64_t# /usr/include/x86_64-linux-gnu/bits/types.h: 58
+__int_least64_t = c_int64# /usr/include/x86_64-linux-gnu/bits/types.h: 58
 
 __uint_least64_t = __uint64_t# /usr/include/x86_64-linux-gnu/bits/types.h: 59
 
@@ -1182,17 +1214,17 @@ timer_t = __timer_t# /usr/include/x86_64-linux-gnu/bits/types/timer_t.h: 7
 
 ulong = c_ulong# /usr/include/x86_64-linux-gnu/sys/types.h: 148
 
-ushort = c_uint# /usr/include/x86_64-linux-gnu/sys/types.h: 149
+ushort = c_ushort# /usr/include/x86_64-linux-gnu/sys/types.h: 149
 
 uint = c_uint# /usr/include/x86_64-linux-gnu/sys/types.h: 150
 
-int8_t = __int8_t# /usr/include/x86_64-linux-gnu/bits/stdint-intn.h: 24
+int8_t = c_int8# /usr/include/x86_64-linux-gnu/bits/stdint-intn.h: 24
 
-int16_t = __int16_t# /usr/include/x86_64-linux-gnu/bits/stdint-intn.h: 25
+int16_t = c_int16# /usr/include/x86_64-linux-gnu/bits/stdint-intn.h: 25
 
-int32_t = __int32_t# /usr/include/x86_64-linux-gnu/bits/stdint-intn.h: 26
+int32_t = c_int32# /usr/include/x86_64-linux-gnu/bits/stdint-intn.h: 26
 
-int64_t = __int64_t# /usr/include/x86_64-linux-gnu/bits/stdint-intn.h: 27
+int64_t = c_int64# /usr/include/x86_64-linux-gnu/bits/stdint-intn.h: 27
 
 u_int8_t = __uint8_t# /usr/include/x86_64-linux-gnu/sys/types.h: 158
 
@@ -1263,6 +1295,18 @@ struct_anon_7._fields_ = [
 fd_set = struct_anon_7# /usr/include/x86_64-linux-gnu/sys/select.h: 70
 
 fd_mask = __fd_mask# /usr/include/x86_64-linux-gnu/sys/select.h: 77
+
+# /usr/include/x86_64-linux-gnu/sys/select.h: 101
+if _libs["omapi"].has("select", "cdecl"):
+    select = _libs["omapi"].get("select", "cdecl")
+    select.argtypes = [c_int, POINTER(fd_set), POINTER(fd_set), POINTER(fd_set), POINTER(struct_timeval)]
+    select.restype = c_int
+
+# /usr/include/x86_64-linux-gnu/sys/select.h: 113
+if _libs["omapi"].has("pselect", "cdecl"):
+    pselect = _libs["omapi"].get("pselect", "cdecl")
+    pselect.argtypes = [c_int, POINTER(fd_set), POINTER(fd_set), POINTER(fd_set), POINTER(struct_timespec), POINTER(__sigset_t)]
+    pselect.restype = c_int
 
 blksize_t = __blksize_t# /usr/include/x86_64-linux-gnu/sys/types.h: 185
 
@@ -1587,48 +1631,36 @@ union_anon_19._fields_ = [
 pthread_barrierattr_t = union_anon_19# /usr/include/x86_64-linux-gnu/bits/pthreadtypes.h: 118
 
 # /usr/include/stdlib.h: 401
-for _lib in _libs.values():
-    if not _lib.has("random", "cdecl"):
-        continue
-    random = _lib.get("random", "cdecl")
+if _libs["omapi"].has("random", "cdecl"):
+    random = _libs["omapi"].get("random", "cdecl")
     random.argtypes = []
     random.restype = c_long
-    break
 
 # /usr/include/stdlib.h: 404
-for _lib in _libs.values():
-    if not _lib.has("srandom", "cdecl"):
-        continue
-    srandom = _lib.get("srandom", "cdecl")
+if _libs["omapi"].has("srandom", "cdecl"):
+    srandom = _libs["omapi"].get("srandom", "cdecl")
     srandom.argtypes = [c_uint]
     srandom.restype = None
-    break
 
 # /usr/include/stdlib.h: 410
-for _lib in _libs.values():
-    if not _lib.has("initstate", "cdecl"):
-        continue
-    initstate = _lib.get("initstate", "cdecl")
+if _libs["omapi"].has("initstate", "cdecl"):
+    initstate = _libs["omapi"].get("initstate", "cdecl")
     initstate.argtypes = [c_uint, String, c_size_t]
     if sizeof(c_int) == sizeof(c_void_p):
         initstate.restype = ReturnString
     else:
         initstate.restype = String
         initstate.errcheck = ReturnString
-    break
 
 # /usr/include/stdlib.h: 415
-for _lib in _libs.values():
-    if not _lib.has("setstate", "cdecl"):
-        continue
-    setstate = _lib.get("setstate", "cdecl")
+if _libs["omapi"].has("setstate", "cdecl"):
+    setstate = _libs["omapi"].get("setstate", "cdecl")
     setstate.argtypes = [String]
     if sizeof(c_int) == sizeof(c_void_p):
         setstate.restype = ReturnString
     else:
         setstate.restype = String
         setstate.errcheck = ReturnString
-    break
 
 # /usr/include/stdlib.h: 423
 class struct_random_data(Structure):
@@ -1653,122 +1685,101 @@ struct_random_data._fields_ = [
     ('end_ptr', POINTER(c_int32)),
 ]
 
+# /usr/include/stdlib.h: 434
+if _libs["omapi"].has("random_r", "cdecl"):
+    random_r = _libs["omapi"].get("random_r", "cdecl")
+    random_r.argtypes = [POINTER(struct_random_data), POINTER(c_int32)]
+    random_r.restype = c_int
+
 # /usr/include/stdlib.h: 437
-for _lib in _libs.values():
-    if not _lib.has("srandom_r", "cdecl"):
-        continue
-    srandom_r = _lib.get("srandom_r", "cdecl")
+if _libs["omapi"].has("srandom_r", "cdecl"):
+    srandom_r = _libs["omapi"].get("srandom_r", "cdecl")
     srandom_r.argtypes = [c_uint, POINTER(struct_random_data)]
     srandom_r.restype = c_int
-    break
+
+# /usr/include/stdlib.h: 440
+if _libs["omapi"].has("initstate_r", "cdecl"):
+    initstate_r = _libs["omapi"].get("initstate_r", "cdecl")
+    initstate_r.argtypes = [c_uint, String, c_size_t, POINTER(struct_random_data)]
+    initstate_r.restype = c_int
+
+# /usr/include/stdlib.h: 445
+if _libs["omapi"].has("setstate_r", "cdecl"):
+    setstate_r = _libs["omapi"].get("setstate_r", "cdecl")
+    setstate_r.argtypes = [String, POINTER(struct_random_data)]
+    setstate_r.restype = c_int
 
 # /usr/include/stdlib.h: 453
-for _lib in _libs.values():
-    if not _lib.has("rand", "cdecl"):
-        continue
-    rand = _lib.get("rand", "cdecl")
+if _libs["omapi"].has("rand", "cdecl"):
+    rand = _libs["omapi"].get("rand", "cdecl")
     rand.argtypes = []
     rand.restype = c_int
-    break
 
 # /usr/include/stdlib.h: 455
-for _lib in _libs.values():
-    if not _lib.has("srand", "cdecl"):
-        continue
-    srand = _lib.get("srand", "cdecl")
+if _libs["omapi"].has("srand", "cdecl"):
+    srand = _libs["omapi"].get("srand", "cdecl")
     srand.argtypes = [c_uint]
     srand.restype = None
-    break
 
 # /usr/include/stdlib.h: 459
-for _lib in _libs.values():
-    if not _lib.has("rand_r", "cdecl"):
-        continue
-    rand_r = _lib.get("rand_r", "cdecl")
+if _libs["omapi"].has("rand_r", "cdecl"):
+    rand_r = _libs["omapi"].get("rand_r", "cdecl")
     rand_r.argtypes = [POINTER(c_uint)]
     rand_r.restype = c_int
-    break
 
 # /usr/include/stdlib.h: 467
-for _lib in _libs.values():
-    if not _lib.has("drand48", "cdecl"):
-        continue
-    drand48 = _lib.get("drand48", "cdecl")
+if _libs["omapi"].has("drand48", "cdecl"):
+    drand48 = _libs["omapi"].get("drand48", "cdecl")
     drand48.argtypes = []
     drand48.restype = c_double
-    break
 
 # /usr/include/stdlib.h: 468
-for _lib in _libs.values():
-    if not _lib.has("erand48", "cdecl"):
-        continue
-    erand48 = _lib.get("erand48", "cdecl")
-    erand48.argtypes = [c_uint * int(3)]
+if _libs["omapi"].has("erand48", "cdecl"):
+    erand48 = _libs["omapi"].get("erand48", "cdecl")
+    erand48.argtypes = [c_ushort * int(3)]
     erand48.restype = c_double
-    break
 
 # /usr/include/stdlib.h: 471
-for _lib in _libs.values():
-    if not _lib.has("lrand48", "cdecl"):
-        continue
-    lrand48 = _lib.get("lrand48", "cdecl")
+if _libs["omapi"].has("lrand48", "cdecl"):
+    lrand48 = _libs["omapi"].get("lrand48", "cdecl")
     lrand48.argtypes = []
     lrand48.restype = c_long
-    break
 
 # /usr/include/stdlib.h: 472
-for _lib in _libs.values():
-    if not _lib.has("nrand48", "cdecl"):
-        continue
-    nrand48 = _lib.get("nrand48", "cdecl")
-    nrand48.argtypes = [c_uint * int(3)]
+if _libs["omapi"].has("nrand48", "cdecl"):
+    nrand48 = _libs["omapi"].get("nrand48", "cdecl")
+    nrand48.argtypes = [c_ushort * int(3)]
     nrand48.restype = c_long
-    break
 
 # /usr/include/stdlib.h: 476
-for _lib in _libs.values():
-    if not _lib.has("mrand48", "cdecl"):
-        continue
-    mrand48 = _lib.get("mrand48", "cdecl")
+if _libs["omapi"].has("mrand48", "cdecl"):
+    mrand48 = _libs["omapi"].get("mrand48", "cdecl")
     mrand48.argtypes = []
     mrand48.restype = c_long
-    break
 
 # /usr/include/stdlib.h: 477
-for _lib in _libs.values():
-    if not _lib.has("jrand48", "cdecl"):
-        continue
-    jrand48 = _lib.get("jrand48", "cdecl")
-    jrand48.argtypes = [c_uint * int(3)]
+if _libs["omapi"].has("jrand48", "cdecl"):
+    jrand48 = _libs["omapi"].get("jrand48", "cdecl")
+    jrand48.argtypes = [c_ushort * int(3)]
     jrand48.restype = c_long
-    break
 
 # /usr/include/stdlib.h: 481
-for _lib in _libs.values():
-    if not _lib.has("srand48", "cdecl"):
-        continue
-    srand48 = _lib.get("srand48", "cdecl")
+if _libs["omapi"].has("srand48", "cdecl"):
+    srand48 = _libs["omapi"].get("srand48", "cdecl")
     srand48.argtypes = [c_long]
     srand48.restype = None
-    break
 
 # /usr/include/stdlib.h: 482
-for _lib in _libs.values():
-    if not _lib.has("seed48", "cdecl"):
-        continue
-    seed48 = _lib.get("seed48", "cdecl")
-    seed48.argtypes = [c_uint * int(3)]
-    seed48.restype = POINTER(c_uint)
-    break
+if _libs["omapi"].has("seed48", "cdecl"):
+    seed48 = _libs["omapi"].get("seed48", "cdecl")
+    seed48.argtypes = [c_ushort * int(3)]
+    seed48.restype = POINTER(c_ushort)
 
 # /usr/include/stdlib.h: 484
-for _lib in _libs.values():
-    if not _lib.has("lcong48", "cdecl"):
-        continue
-    lcong48 = _lib.get("lcong48", "cdecl")
-    lcong48.argtypes = [c_uint * int(7)]
+if _libs["omapi"].has("lcong48", "cdecl"):
+    lcong48 = _libs["omapi"].get("lcong48", "cdecl")
+    lcong48.argtypes = [c_ushort * int(7)]
     lcong48.restype = None
-    break
 
 # /usr/include/stdlib.h: 490
 class struct_drand48_data(Structure):
@@ -1782,457 +1793,453 @@ struct_drand48_data.__slots__ = [
     '__a',
 ]
 struct_drand48_data._fields_ = [
-    ('__x', c_uint * int(3)),
-    ('__old_x', c_uint * int(3)),
-    ('__c', c_uint),
-    ('__init', c_uint),
+    ('__x', c_ushort * int(3)),
+    ('__old_x', c_ushort * int(3)),
+    ('__c', c_ushort),
+    ('__init', c_ushort),
     ('__a', c_ulonglong),
 ]
 
+# /usr/include/stdlib.h: 501
+if _libs["omapi"].has("drand48_r", "cdecl"):
+    drand48_r = _libs["omapi"].get("drand48_r", "cdecl")
+    drand48_r.argtypes = [POINTER(struct_drand48_data), POINTER(c_double)]
+    drand48_r.restype = c_int
+
+# /usr/include/stdlib.h: 503
+if _libs["omapi"].has("erand48_r", "cdecl"):
+    erand48_r = _libs["omapi"].get("erand48_r", "cdecl")
+    erand48_r.argtypes = [c_ushort * int(3), POINTER(struct_drand48_data), POINTER(c_double)]
+    erand48_r.restype = c_int
+
+# /usr/include/stdlib.h: 508
+if _libs["omapi"].has("lrand48_r", "cdecl"):
+    lrand48_r = _libs["omapi"].get("lrand48_r", "cdecl")
+    lrand48_r.argtypes = [POINTER(struct_drand48_data), POINTER(c_long)]
+    lrand48_r.restype = c_int
+
+# /usr/include/stdlib.h: 511
+if _libs["omapi"].has("nrand48_r", "cdecl"):
+    nrand48_r = _libs["omapi"].get("nrand48_r", "cdecl")
+    nrand48_r.argtypes = [c_ushort * int(3), POINTER(struct_drand48_data), POINTER(c_long)]
+    nrand48_r.restype = c_int
+
+# /usr/include/stdlib.h: 517
+if _libs["omapi"].has("mrand48_r", "cdecl"):
+    mrand48_r = _libs["omapi"].get("mrand48_r", "cdecl")
+    mrand48_r.argtypes = [POINTER(struct_drand48_data), POINTER(c_long)]
+    mrand48_r.restype = c_int
+
+# /usr/include/stdlib.h: 520
+if _libs["omapi"].has("jrand48_r", "cdecl"):
+    jrand48_r = _libs["omapi"].get("jrand48_r", "cdecl")
+    jrand48_r.argtypes = [c_ushort * int(3), POINTER(struct_drand48_data), POINTER(c_long)]
+    jrand48_r.restype = c_int
+
 # /usr/include/stdlib.h: 526
-for _lib in _libs.values():
-    if not _lib.has("srand48_r", "cdecl"):
-        continue
-    srand48_r = _lib.get("srand48_r", "cdecl")
+if _libs["omapi"].has("srand48_r", "cdecl"):
+    srand48_r = _libs["omapi"].get("srand48_r", "cdecl")
     srand48_r.argtypes = [c_long, POINTER(struct_drand48_data)]
     srand48_r.restype = c_int
-    break
 
 # /usr/include/stdlib.h: 529
-for _lib in _libs.values():
-    if not _lib.has("seed48_r", "cdecl"):
-        continue
-    seed48_r = _lib.get("seed48_r", "cdecl")
-    seed48_r.argtypes = [c_uint * int(3), POINTER(struct_drand48_data)]
+if _libs["omapi"].has("seed48_r", "cdecl"):
+    seed48_r = _libs["omapi"].get("seed48_r", "cdecl")
+    seed48_r.argtypes = [c_ushort * int(3), POINTER(struct_drand48_data)]
     seed48_r.restype = c_int
-    break
 
 # /usr/include/stdlib.h: 532
-for _lib in _libs.values():
-    if not _lib.has("lcong48_r", "cdecl"):
-        continue
-    lcong48_r = _lib.get("lcong48_r", "cdecl")
-    lcong48_r.argtypes = [c_uint * int(7), POINTER(struct_drand48_data)]
+if _libs["omapi"].has("lcong48_r", "cdecl"):
+    lcong48_r = _libs["omapi"].get("lcong48_r", "cdecl")
+    lcong48_r.argtypes = [c_ushort * int(7), POINTER(struct_drand48_data)]
     lcong48_r.restype = c_int
-    break
 
 # /usr/include/stdlib.h: 539
-for _lib in _libs.values():
-    if not _lib.has("malloc", "cdecl"):
-        continue
-    malloc = _lib.get("malloc", "cdecl")
+if _libs["omapi"].has("malloc", "cdecl"):
+    malloc = _libs["omapi"].get("malloc", "cdecl")
     malloc.argtypes = [c_size_t]
     malloc.restype = POINTER(c_ubyte)
     malloc.errcheck = lambda v,*a : cast(v, c_void_p)
-    break
 
 # /usr/include/stdlib.h: 542
-for _lib in _libs.values():
-    if not _lib.has("calloc", "cdecl"):
-        continue
-    calloc = _lib.get("calloc", "cdecl")
+if _libs["omapi"].has("calloc", "cdecl"):
+    calloc = _libs["omapi"].get("calloc", "cdecl")
     calloc.argtypes = [c_size_t, c_size_t]
     calloc.restype = POINTER(c_ubyte)
     calloc.errcheck = lambda v,*a : cast(v, c_void_p)
-    break
 
 # /usr/include/stdlib.h: 550
-for _lib in _libs.values():
-    if not _lib.has("realloc", "cdecl"):
-        continue
-    realloc = _lib.get("realloc", "cdecl")
+if _libs["omapi"].has("realloc", "cdecl"):
+    realloc = _libs["omapi"].get("realloc", "cdecl")
     realloc.argtypes = [POINTER(None), c_size_t]
     realloc.restype = POINTER(c_ubyte)
     realloc.errcheck = lambda v,*a : cast(v, c_void_p)
-    break
 
 # /usr/include/stdlib.h: 559
-for _lib in _libs.values():
-    if not _lib.has("reallocarray", "cdecl"):
-        continue
-    reallocarray = _lib.get("reallocarray", "cdecl")
+if _libs["omapi"].has("reallocarray", "cdecl"):
+    reallocarray = _libs["omapi"].get("reallocarray", "cdecl")
     reallocarray.argtypes = [POINTER(None), c_size_t, c_size_t]
     reallocarray.restype = POINTER(c_ubyte)
     reallocarray.errcheck = lambda v,*a : cast(v, c_void_p)
-    break
 
 # /usr/include/stdlib.h: 565
-for _lib in _libs.values():
-    if not _lib.has("free", "cdecl"):
-        continue
-    free = _lib.get("free", "cdecl")
+if _libs["omapi"].has("free", "cdecl"):
+    free = _libs["omapi"].get("free", "cdecl")
     free.argtypes = [POINTER(None)]
     free.restype = None
-    break
 
 # /usr/include/stdlib.h: 574
-for _lib in _libs.values():
-    if not _lib.has("valloc", "cdecl"):
-        continue
-    valloc = _lib.get("valloc", "cdecl")
+if _libs["omapi"].has("valloc", "cdecl"):
+    valloc = _libs["omapi"].get("valloc", "cdecl")
     valloc.argtypes = [c_size_t]
     valloc.restype = POINTER(c_ubyte)
     valloc.errcheck = lambda v,*a : cast(v, c_void_p)
-    break
 
 # /usr/include/stdlib.h: 580
-for _lib in _libs.values():
-    if not _lib.has("posix_memalign", "cdecl"):
-        continue
-    posix_memalign = _lib.get("posix_memalign", "cdecl")
+if _libs["omapi"].has("posix_memalign", "cdecl"):
+    posix_memalign = _libs["omapi"].get("posix_memalign", "cdecl")
     posix_memalign.argtypes = [POINTER(POINTER(None)), c_size_t, c_size_t]
     posix_memalign.restype = c_int
-    break
 
 # /usr/include/stdlib.h: 586
-for _lib in _libs.values():
-    if not _lib.has("aligned_alloc", "cdecl"):
-        continue
-    aligned_alloc = _lib.get("aligned_alloc", "cdecl")
+if _libs["omapi"].has("aligned_alloc", "cdecl"):
+    aligned_alloc = _libs["omapi"].get("aligned_alloc", "cdecl")
     aligned_alloc.argtypes = [c_size_t, c_size_t]
     aligned_alloc.restype = POINTER(c_ubyte)
     aligned_alloc.errcheck = lambda v,*a : cast(v, c_void_p)
-    break
 
 # /usr/include/stdlib.h: 591
-for _lib in _libs.values():
-    if not _lib.has("abort", "cdecl"):
-        continue
-    abort = _lib.get("abort", "cdecl")
+if _libs["omapi"].has("abort", "cdecl"):
+    abort = _libs["omapi"].get("abort", "cdecl")
     abort.argtypes = []
     abort.restype = None
-    break
 
 # /usr/include/stdlib.h: 595
-for _lib in _libs.values():
-    if not _lib.has("atexit", "cdecl"):
-        continue
-    atexit = _lib.get("atexit", "cdecl")
+if _libs["omapi"].has("atexit", "cdecl"):
+    atexit = _libs["omapi"].get("atexit", "cdecl")
     atexit.argtypes = [CFUNCTYPE(UNCHECKED(None), )]
     atexit.restype = c_int
-    break
 
 # /usr/include/stdlib.h: 603
-for _lib in _libs.values():
-    if not _lib.has("at_quick_exit", "cdecl"):
-        continue
-    at_quick_exit = _lib.get("at_quick_exit", "cdecl")
+if _libs["omapi"].has("at_quick_exit", "cdecl"):
+    at_quick_exit = _libs["omapi"].get("at_quick_exit", "cdecl")
     at_quick_exit.argtypes = [CFUNCTYPE(UNCHECKED(None), )]
     at_quick_exit.restype = c_int
-    break
 
 # /usr/include/stdlib.h: 610
-for _lib in _libs.values():
-    if not _lib.has("on_exit", "cdecl"):
-        continue
-    on_exit = _lib.get("on_exit", "cdecl")
+if _libs["omapi"].has("on_exit", "cdecl"):
+    on_exit = _libs["omapi"].get("on_exit", "cdecl")
     on_exit.argtypes = [CFUNCTYPE(UNCHECKED(None), c_int, POINTER(None)), POINTER(None)]
     on_exit.restype = c_int
-    break
 
 # /usr/include/stdlib.h: 617
-for _lib in _libs.values():
-    if not _lib.has("exit", "cdecl"):
-        continue
-    exit = _lib.get("exit", "cdecl")
+if _libs["omapi"].has("exit", "cdecl"):
+    exit = _libs["omapi"].get("exit", "cdecl")
     exit.argtypes = [c_int]
     exit.restype = None
-    break
 
 # /usr/include/stdlib.h: 623
-for _lib in _libs.values():
-    if not _lib.has("quick_exit", "cdecl"):
-        continue
-    quick_exit = _lib.get("quick_exit", "cdecl")
+if _libs["omapi"].has("quick_exit", "cdecl"):
+    quick_exit = _libs["omapi"].get("quick_exit", "cdecl")
     quick_exit.argtypes = [c_int]
     quick_exit.restype = None
-    break
 
 # /usr/include/stdlib.h: 629
-for _lib in _libs.values():
-    if not _lib.has("_Exit", "cdecl"):
-        continue
-    _Exit = _lib.get("_Exit", "cdecl")
+if _libs["omapi"].has("_Exit", "cdecl"):
+    _Exit = _libs["omapi"].get("_Exit", "cdecl")
     _Exit.argtypes = [c_int]
     _Exit.restype = None
-    break
 
 # /usr/include/stdlib.h: 634
-for _lib in _libs.values():
-    if not _lib.has("getenv", "cdecl"):
-        continue
-    getenv = _lib.get("getenv", "cdecl")
+if _libs["omapi"].has("getenv", "cdecl"):
+    getenv = _libs["omapi"].get("getenv", "cdecl")
     getenv.argtypes = [String]
     if sizeof(c_int) == sizeof(c_void_p):
         getenv.restype = ReturnString
     else:
         getenv.restype = String
         getenv.errcheck = ReturnString
-    break
 
 # /usr/include/stdlib.h: 647
-for _lib in _libs.values():
-    if not _lib.has("putenv", "cdecl"):
-        continue
-    putenv = _lib.get("putenv", "cdecl")
+if _libs["omapi"].has("putenv", "cdecl"):
+    putenv = _libs["omapi"].get("putenv", "cdecl")
     putenv.argtypes = [String]
     putenv.restype = c_int
-    break
 
 # /usr/include/stdlib.h: 653
-for _lib in _libs.values():
-    if not _lib.has("setenv", "cdecl"):
-        continue
-    setenv = _lib.get("setenv", "cdecl")
+if _libs["omapi"].has("setenv", "cdecl"):
+    setenv = _libs["omapi"].get("setenv", "cdecl")
     setenv.argtypes = [String, String, c_int]
     setenv.restype = c_int
-    break
 
 # /usr/include/stdlib.h: 657
-for _lib in _libs.values():
-    if not _lib.has("unsetenv", "cdecl"):
-        continue
-    unsetenv = _lib.get("unsetenv", "cdecl")
+if _libs["omapi"].has("unsetenv", "cdecl"):
+    unsetenv = _libs["omapi"].get("unsetenv", "cdecl")
     unsetenv.argtypes = [String]
     unsetenv.restype = c_int
-    break
 
 # /usr/include/stdlib.h: 664
-for _lib in _libs.values():
-    if not _lib.has("clearenv", "cdecl"):
-        continue
-    clearenv = _lib.get("clearenv", "cdecl")
+if _libs["omapi"].has("clearenv", "cdecl"):
+    clearenv = _libs["omapi"].get("clearenv", "cdecl")
     clearenv.argtypes = []
     clearenv.restype = c_int
-    break
 
 # /usr/include/stdlib.h: 675
-for _lib in _libs.values():
-    if not _lib.has("mktemp", "cdecl"):
-        continue
-    mktemp = _lib.get("mktemp", "cdecl")
+if _libs["omapi"].has("mktemp", "cdecl"):
+    mktemp = _libs["omapi"].get("mktemp", "cdecl")
     mktemp.argtypes = [String]
     if sizeof(c_int) == sizeof(c_void_p):
         mktemp.restype = ReturnString
     else:
         mktemp.restype = String
         mktemp.errcheck = ReturnString
-    break
 
 # /usr/include/stdlib.h: 688
-for _lib in _libs.values():
-    if not _lib.has("mkstemp", "cdecl"):
-        continue
-    mkstemp = _lib.get("mkstemp", "cdecl")
+if _libs["omapi"].has("mkstemp", "cdecl"):
+    mkstemp = _libs["omapi"].get("mkstemp", "cdecl")
     mkstemp.argtypes = [String]
     mkstemp.restype = c_int
-    break
 
 # /usr/include/stdlib.h: 710
-for _lib in _libs.values():
-    if not _lib.has("mkstemps", "cdecl"):
-        continue
-    mkstemps = _lib.get("mkstemps", "cdecl")
+if _libs["omapi"].has("mkstemps", "cdecl"):
+    mkstemps = _libs["omapi"].get("mkstemps", "cdecl")
     mkstemps.argtypes = [String, c_int]
     mkstemps.restype = c_int
-    break
 
 # /usr/include/stdlib.h: 731
-for _lib in _libs.values():
-    if not _lib.has("mkdtemp", "cdecl"):
-        continue
-    mkdtemp = _lib.get("mkdtemp", "cdecl")
+if _libs["omapi"].has("mkdtemp", "cdecl"):
+    mkdtemp = _libs["omapi"].get("mkdtemp", "cdecl")
     mkdtemp.argtypes = [String]
     if sizeof(c_int) == sizeof(c_void_p):
         mkdtemp.restype = ReturnString
     else:
         mkdtemp.restype = String
         mkdtemp.errcheck = ReturnString
-    break
 
 # /usr/include/stdlib.h: 784
-for _lib in _libs.values():
-    if not _lib.has("system", "cdecl"):
-        continue
-    system = _lib.get("system", "cdecl")
+if _libs["omapi"].has("system", "cdecl"):
+    system = _libs["omapi"].get("system", "cdecl")
     system.argtypes = [String]
     system.restype = c_int
-    break
+
+# /usr/include/stdlib.h: 800
+if _libs["omapi"].has("realpath", "cdecl"):
+    realpath = _libs["omapi"].get("realpath", "cdecl")
+    realpath.argtypes = [String, String]
+    if sizeof(c_int) == sizeof(c_void_p):
+        realpath.restype = ReturnString
+    else:
+        realpath.restype = String
+        realpath.errcheck = ReturnString
 
 __compar_fn_t = CFUNCTYPE(UNCHECKED(c_int), POINTER(None), POINTER(None))# /usr/include/stdlib.h: 808
 
 # /usr/include/stdlib.h: 820
-for _lib in _libs.values():
-    if not _lib.has("bsearch", "cdecl"):
-        continue
-    bsearch = _lib.get("bsearch", "cdecl")
+if _libs["omapi"].has("bsearch", "cdecl"):
+    bsearch = _libs["omapi"].get("bsearch", "cdecl")
     bsearch.argtypes = [POINTER(None), POINTER(None), c_size_t, c_size_t, __compar_fn_t]
     bsearch.restype = POINTER(c_ubyte)
     bsearch.errcheck = lambda v,*a : cast(v, c_void_p)
-    break
 
 # /usr/include/stdlib.h: 830
-for _lib in _libs.values():
-    if not _lib.has("qsort", "cdecl"):
-        continue
-    qsort = _lib.get("qsort", "cdecl")
+if _libs["omapi"].has("qsort", "cdecl"):
+    qsort = _libs["omapi"].get("qsort", "cdecl")
     qsort.argtypes = [POINTER(None), c_size_t, c_size_t, __compar_fn_t]
     qsort.restype = None
-    break
 
 # /usr/include/stdlib.h: 840
-for _lib in _libs.values():
-    if not _lib.has("abs", "cdecl"):
-        continue
-    abs = _lib.get("abs", "cdecl")
+if _libs["omapi"].has("abs", "cdecl"):
+    abs = _libs["omapi"].get("abs", "cdecl")
     abs.argtypes = [c_int]
     abs.restype = c_int
-    break
 
 # /usr/include/stdlib.h: 841
-for _lib in _libs.values():
-    if not _lib.has("labs", "cdecl"):
-        continue
-    labs = _lib.get("labs", "cdecl")
+if _libs["omapi"].has("labs", "cdecl"):
+    labs = _libs["omapi"].get("labs", "cdecl")
     labs.argtypes = [c_long]
     labs.restype = c_long
-    break
 
 # /usr/include/stdlib.h: 844
-for _lib in _libs.values():
-    if not _lib.has("llabs", "cdecl"):
-        continue
-    llabs = _lib.get("llabs", "cdecl")
+if _libs["omapi"].has("llabs", "cdecl"):
+    llabs = _libs["omapi"].get("llabs", "cdecl")
     llabs.argtypes = [c_longlong]
     llabs.restype = c_longlong
-    break
 
 # /usr/include/stdlib.h: 852
-for _lib in _libs.values():
-    if not _lib.has("div", "cdecl"):
-        continue
-    div = _lib.get("div", "cdecl")
+if _libs["omapi"].has("div", "cdecl"):
+    div = _libs["omapi"].get("div", "cdecl")
     div.argtypes = [c_int, c_int]
     div.restype = div_t
-    break
 
 # /usr/include/stdlib.h: 854
-for _lib in _libs.values():
-    if not _lib.has("ldiv", "cdecl"):
-        continue
-    ldiv = _lib.get("ldiv", "cdecl")
+if _libs["omapi"].has("ldiv", "cdecl"):
+    ldiv = _libs["omapi"].get("ldiv", "cdecl")
     ldiv.argtypes = [c_long, c_long]
     ldiv.restype = ldiv_t
-    break
 
 # /usr/include/stdlib.h: 858
-for _lib in _libs.values():
-    if not _lib.has("lldiv", "cdecl"):
-        continue
-    lldiv = _lib.get("lldiv", "cdecl")
+if _libs["omapi"].has("lldiv", "cdecl"):
+    lldiv = _libs["omapi"].get("lldiv", "cdecl")
     lldiv.argtypes = [c_longlong, c_longlong]
     lldiv.restype = lldiv_t
-    break
+
+# /usr/include/stdlib.h: 872
+if _libs["omapi"].has("ecvt", "cdecl"):
+    ecvt = _libs["omapi"].get("ecvt", "cdecl")
+    ecvt.argtypes = [c_double, c_int, POINTER(c_int), POINTER(c_int)]
+    if sizeof(c_int) == sizeof(c_void_p):
+        ecvt.restype = ReturnString
+    else:
+        ecvt.restype = String
+        ecvt.errcheck = ReturnString
+
+# /usr/include/stdlib.h: 878
+if _libs["omapi"].has("fcvt", "cdecl"):
+    fcvt = _libs["omapi"].get("fcvt", "cdecl")
+    fcvt.argtypes = [c_double, c_int, POINTER(c_int), POINTER(c_int)]
+    if sizeof(c_int) == sizeof(c_void_p):
+        fcvt.restype = ReturnString
+    else:
+        fcvt.restype = String
+        fcvt.errcheck = ReturnString
 
 # /usr/include/stdlib.h: 884
-for _lib in _libs.values():
-    if not _lib.has("gcvt", "cdecl"):
-        continue
-    gcvt = _lib.get("gcvt", "cdecl")
+if _libs["omapi"].has("gcvt", "cdecl"):
+    gcvt = _libs["omapi"].get("gcvt", "cdecl")
     gcvt.argtypes = [c_double, c_int, String]
     if sizeof(c_int) == sizeof(c_void_p):
         gcvt.restype = ReturnString
     else:
         gcvt.restype = String
         gcvt.errcheck = ReturnString
-    break
+
+# /usr/include/stdlib.h: 890
+if _libs["omapi"].has("qecvt", "cdecl"):
+    qecvt = _libs["omapi"].get("qecvt", "cdecl")
+    qecvt.argtypes = [c_longdouble, c_int, POINTER(c_int), POINTER(c_int)]
+    if sizeof(c_int) == sizeof(c_void_p):
+        qecvt.restype = ReturnString
+    else:
+        qecvt.restype = String
+        qecvt.errcheck = ReturnString
+
+# /usr/include/stdlib.h: 893
+if _libs["omapi"].has("qfcvt", "cdecl"):
+    qfcvt = _libs["omapi"].get("qfcvt", "cdecl")
+    qfcvt.argtypes = [c_longdouble, c_int, POINTER(c_int), POINTER(c_int)]
+    if sizeof(c_int) == sizeof(c_void_p):
+        qfcvt.restype = ReturnString
+    else:
+        qfcvt.restype = String
+        qfcvt.errcheck = ReturnString
 
 # /usr/include/stdlib.h: 896
-for _lib in _libs.values():
-    if not _lib.has("qgcvt", "cdecl"):
-        continue
-    qgcvt = _lib.get("qgcvt", "cdecl")
+if _libs["omapi"].has("qgcvt", "cdecl"):
+    qgcvt = _libs["omapi"].get("qgcvt", "cdecl")
     qgcvt.argtypes = [c_longdouble, c_int, String]
     if sizeof(c_int) == sizeof(c_void_p):
         qgcvt.restype = ReturnString
     else:
         qgcvt.restype = String
         qgcvt.errcheck = ReturnString
-    break
+
+# /usr/include/stdlib.h: 902
+if _libs["omapi"].has("ecvt_r", "cdecl"):
+    ecvt_r = _libs["omapi"].get("ecvt_r", "cdecl")
+    ecvt_r.argtypes = [c_double, c_int, POINTER(c_int), POINTER(c_int), String, c_size_t]
+    ecvt_r.restype = c_int
+
+# /usr/include/stdlib.h: 905
+if _libs["omapi"].has("fcvt_r", "cdecl"):
+    fcvt_r = _libs["omapi"].get("fcvt_r", "cdecl")
+    fcvt_r.argtypes = [c_double, c_int, POINTER(c_int), POINTER(c_int), String, c_size_t]
+    fcvt_r.restype = c_int
+
+# /usr/include/stdlib.h: 909
+if _libs["omapi"].has("qecvt_r", "cdecl"):
+    qecvt_r = _libs["omapi"].get("qecvt_r", "cdecl")
+    qecvt_r.argtypes = [c_longdouble, c_int, POINTER(c_int), POINTER(c_int), String, c_size_t]
+    qecvt_r.restype = c_int
+
+# /usr/include/stdlib.h: 913
+if _libs["omapi"].has("qfcvt_r", "cdecl"):
+    qfcvt_r = _libs["omapi"].get("qfcvt_r", "cdecl")
+    qfcvt_r.argtypes = [c_longdouble, c_int, POINTER(c_int), POINTER(c_int), String, c_size_t]
+    qfcvt_r.restype = c_int
 
 # /usr/include/stdlib.h: 922
-for _lib in _libs.values():
-    if not _lib.has("mblen", "cdecl"):
-        continue
-    mblen = _lib.get("mblen", "cdecl")
+if _libs["omapi"].has("mblen", "cdecl"):
+    mblen = _libs["omapi"].get("mblen", "cdecl")
     mblen.argtypes = [String, c_size_t]
     mblen.restype = c_int
-    break
+
+# /usr/include/stdlib.h: 925
+if _libs["omapi"].has("mbtowc", "cdecl"):
+    mbtowc = _libs["omapi"].get("mbtowc", "cdecl")
+    mbtowc.argtypes = [POINTER(c_wchar), String, c_size_t]
+    mbtowc.restype = c_int
 
 # /usr/include/stdlib.h: 929
-for _lib in _libs.values():
-    if not _lib.has("wctomb", "cdecl"):
-        continue
-    wctomb = _lib.get("wctomb", "cdecl")
+if _libs["omapi"].has("wctomb", "cdecl"):
+    wctomb = _libs["omapi"].get("wctomb", "cdecl")
     wctomb.argtypes = [String, c_wchar]
     wctomb.restype = c_int
-    break
+
+# /usr/include/stdlib.h: 933
+if _libs["omapi"].has("mbstowcs", "cdecl"):
+    mbstowcs = _libs["omapi"].get("mbstowcs", "cdecl")
+    mbstowcs.argtypes = [POINTER(c_wchar), String, c_size_t]
+    mbstowcs.restype = c_size_t
+
+# /usr/include/stdlib.h: 936
+if _libs["omapi"].has("wcstombs", "cdecl"):
+    wcstombs = _libs["omapi"].get("wcstombs", "cdecl")
+    wcstombs.argtypes = [String, POINTER(c_wchar), c_size_t]
+    wcstombs.restype = c_size_t
 
 # /usr/include/stdlib.h: 946
-for _lib in _libs.values():
-    if not _lib.has("rpmatch", "cdecl"):
-        continue
-    rpmatch = _lib.get("rpmatch", "cdecl")
+if _libs["omapi"].has("rpmatch", "cdecl"):
+    rpmatch = _libs["omapi"].get("rpmatch", "cdecl")
     rpmatch.argtypes = [String]
     rpmatch.restype = c_int
-    break
+
+# /usr/include/stdlib.h: 957
+if _libs["omapi"].has("getsubopt", "cdecl"):
+    getsubopt = _libs["omapi"].get("getsubopt", "cdecl")
+    getsubopt.argtypes = [POINTER(POINTER(c_char)), POINTER(POINTER(c_char)), POINTER(POINTER(c_char))]
+    getsubopt.restype = c_int
 
 # /usr/include/stdlib.h: 1003
-for _lib in _libs.values():
-    if not _lib.has("getloadavg", "cdecl"):
-        continue
-    getloadavg = _lib.get("getloadavg", "cdecl")
+if _libs["omapi"].has("getloadavg", "cdecl"):
+    getloadavg = _libs["omapi"].get("getloadavg", "cdecl")
     getloadavg.argtypes = [POINTER(c_double), c_int]
     getloadavg.restype = c_int
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 242
-for _lib in _libs.values():
-    if not _lib.has("OmStartup", "cdecl"):
-        continue
-    OmStartup = _lib.get("OmStartup", "cdecl")
+if _libs["omapi"].has("OmStartup", "cdecl"):
+    OmStartup = _libs["omapi"].get("OmStartup", "cdecl")
     OmStartup.argtypes = [c_int]
     OmStartup.restype = c_int
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 253
-for _lib in _libs.values():
-    if not _lib.has("OmShutdown", "cdecl"):
-        continue
-    OmShutdown = _lib.get("OmShutdown", "cdecl")
+if _libs["omapi"].has("OmShutdown", "cdecl"):
+    OmShutdown = _libs["omapi"].get("OmShutdown", "cdecl")
     OmShutdown.argtypes = []
     OmShutdown.restype = c_int
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 263
-for _lib in _libs.values():
-    if not _lib.has("OmSetLogStream", "cdecl"):
-        continue
-    OmSetLogStream = _lib.get("OmSetLogStream", "cdecl")
+if _libs["omapi"].has("OmSetLogStream", "cdecl"):
+    OmSetLogStream = _libs["omapi"].get("OmSetLogStream", "cdecl")
     OmSetLogStream.argtypes = [c_int]
     OmSetLogStream.restype = c_int
-    break
 
 OmLogCallback = CFUNCTYPE(UNCHECKED(None), POINTER(None), String)# /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 273
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 283
-for _lib in _libs.values():
-    if not _lib.has("OmSetLogCallback", "cdecl"):
-        continue
-    OmSetLogCallback = _lib.get("OmSetLogCallback", "cdecl")
+if _libs["omapi"].has("OmSetLogCallback", "cdecl"):
+    OmSetLogCallback = _libs["omapi"].get("OmSetLogCallback", "cdecl")
     OmSetLogCallback.argtypes = [OmLogCallback, POINTER(None)]
     OmSetLogCallback.restype = c_int
-    break
 
 enum_anon_20 = c_int# /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 294
 
@@ -2245,123 +2252,84 @@ OM_DEVICE_STATUS = enum_anon_20# /mnt/d/Newcastle/Projects/libomapi/include/omap
 OmDeviceCallback = CFUNCTYPE(UNCHECKED(None), POINTER(None), c_int, OM_DEVICE_STATUS)# /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 303
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 313
-for _lib in _libs.values():
-    if not _lib.has("OmSetDeviceCallback", "cdecl"):
-        continue
-    OmSetDeviceCallback = _lib.get("OmSetDeviceCallback", "cdecl")
+if _libs["omapi"].has("OmSetDeviceCallback", "cdecl"):
+    OmSetDeviceCallback = _libs["omapi"].get("OmSetDeviceCallback", "cdecl")
     OmSetDeviceCallback.argtypes = [OmDeviceCallback, POINTER(None)]
     OmSetDeviceCallback.restype = c_int
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 325
-for _lib in _libs.values():
-    if not _lib.has("OmGetDeviceIds", "cdecl"):
-        continue
-    OmGetDeviceIds = _lib.get("OmGetDeviceIds", "cdecl")
+if _libs["omapi"].has("OmGetDeviceIds", "cdecl"):
+    OmGetDeviceIds = _libs["omapi"].get("OmGetDeviceIds", "cdecl")
     OmGetDeviceIds.argtypes = [POINTER(c_int), c_int]
     OmGetDeviceIds.restype = c_int
-    break
 
 OM_DATETIME = c_ulong# /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 335
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 370
-for _lib in _libs.values():
-    if not _lib.has("OmGetVersion", "cdecl"):
-        continue
-    OmGetVersion = _lib.get("OmGetVersion", "cdecl")
+if _libs["omapi"].has("OmGetVersion", "cdecl"):
+    OmGetVersion = _libs["omapi"].get("OmGetVersion", "cdecl")
     OmGetVersion.argtypes = [c_int, POINTER(c_int), POINTER(c_int)]
     OmGetVersion.restype = c_int
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 379
-for _lib in _libs.values():
-    if not _lib.has("OmGetDeviceSerial", "cdecl"):
-        continue
-    OmGetDeviceSerial = _lib.get("OmGetDeviceSerial", "cdecl")
+if _libs["omapi"].has("OmGetDeviceSerial", "cdecl"):
+    OmGetDeviceSerial = _libs["omapi"].get("OmGetDeviceSerial", "cdecl")
     OmGetDeviceSerial.argtypes = [c_int, String]
     OmGetDeviceSerial.restype = c_int
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 389
-for _lib in _libs.values():
-    if not _lib.has("OmGetDevicePort", "cdecl"):
-        continue
-    OmGetDevicePort = _lib.get("OmGetDevicePort", "cdecl")
+if _libs["omapi"].has("OmGetDevicePort", "cdecl"):
+    OmGetDevicePort = _libs["omapi"].get("OmGetDevicePort", "cdecl")
     OmGetDevicePort.argtypes = [c_int, String]
     OmGetDevicePort.restype = c_int
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 399
-for _lib in _libs.values():
-    if not _lib.has("OmGetDevicePath", "cdecl"):
-        continue
-    OmGetDevicePath = _lib.get("OmGetDevicePath", "cdecl")
+if _libs["omapi"].has("OmGetDevicePath", "cdecl"):
+    OmGetDevicePath = _libs["omapi"].get("OmGetDevicePath", "cdecl")
     OmGetDevicePath.argtypes = [c_int, String]
     OmGetDevicePath.restype = c_int
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 408
-for _lib in _libs.values():
-    if not _lib.has("OmGetBatteryLevel", "cdecl"):
-        continue
-    OmGetBatteryLevel = _lib.get("OmGetBatteryLevel", "cdecl")
+if _libs["omapi"].has("OmGetBatteryLevel", "cdecl"):
+    OmGetBatteryLevel = _libs["omapi"].get("OmGetBatteryLevel", "cdecl")
     OmGetBatteryLevel.argtypes = [c_int]
     OmGetBatteryLevel.restype = c_int
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 419
-for _lib in _libs.values():
-    if not _lib.has("OmSelfTest", "cdecl"):
-        continue
-    OmSelfTest = _lib.get("OmSelfTest", "cdecl")
+if _libs["omapi"].has("OmSelfTest", "cdecl"):
+    OmSelfTest = _libs["omapi"].get("OmSelfTest", "cdecl")
     OmSelfTest.argtypes = [c_int]
     OmSelfTest.restype = c_int
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 432
-for _lib in _libs.values():
-    if not _lib.has("OmGetMemoryHealth", "cdecl"):
-        continue
-    OmGetMemoryHealth = _lib.get("OmGetMemoryHealth", "cdecl")
+if _libs["omapi"].has("OmGetMemoryHealth", "cdecl"):
+    OmGetMemoryHealth = _libs["omapi"].get("OmGetMemoryHealth", "cdecl")
     OmGetMemoryHealth.argtypes = [c_int]
     OmGetMemoryHealth.restype = c_int
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 446
-for _lib in _libs.values():
-    if not _lib.has("OmGetBatteryHealth", "cdecl"):
-        continue
-    OmGetBatteryHealth = _lib.get("OmGetBatteryHealth", "cdecl")
+if _libs["omapi"].has("OmGetBatteryHealth", "cdecl"):
+    OmGetBatteryHealth = _libs["omapi"].get("OmGetBatteryHealth", "cdecl")
     OmGetBatteryHealth.argtypes = [c_int]
     OmGetBatteryHealth.restype = c_int
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 458
-for _lib in _libs.values():
-    if not _lib.has("OmGetAccelerometer", "cdecl"):
-        continue
-    OmGetAccelerometer = _lib.get("OmGetAccelerometer", "cdecl")
+if _libs["omapi"].has("OmGetAccelerometer", "cdecl"):
+    OmGetAccelerometer = _libs["omapi"].get("OmGetAccelerometer", "cdecl")
     OmGetAccelerometer.argtypes = [c_int, POINTER(c_int), POINTER(c_int), POINTER(c_int)]
     OmGetAccelerometer.restype = c_int
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 467
-for _lib in _libs.values():
-    if not _lib.has("OmGetTime", "cdecl"):
-        continue
-    OmGetTime = _lib.get("OmGetTime", "cdecl")
+if _libs["omapi"].has("OmGetTime", "cdecl"):
+    OmGetTime = _libs["omapi"].get("OmGetTime", "cdecl")
     OmGetTime.argtypes = [c_int, POINTER(OM_DATETIME)]
     OmGetTime.restype = c_int
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 476
-for _lib in _libs.values():
-    if not _lib.has("OmSetTime", "cdecl"):
-        continue
-    OmSetTime = _lib.get("OmSetTime", "cdecl")
+if _libs["omapi"].has("OmSetTime", "cdecl"):
+    OmSetTime = _libs["omapi"].get("OmSetTime", "cdecl")
     OmSetTime.argtypes = [c_int, OM_DATETIME]
     OmSetTime.restype = c_int
-    break
 
 enum_anon_21 = c_int# /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 498
 
@@ -2386,130 +2354,88 @@ OM_LED_WHITE = 7# /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 498
 OM_LED_STATE = enum_anon_21# /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 498
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 508
-for _lib in _libs.values():
-    if not _lib.has("OmSetLed", "cdecl"):
-        continue
-    OmSetLed = _lib.get("OmSetLed", "cdecl")
+if _libs["omapi"].has("OmSetLed", "cdecl"):
+    OmSetLed = _libs["omapi"].get("OmSetLed", "cdecl")
     OmSetLed.argtypes = [c_int, OM_LED_STATE]
     OmSetLed.restype = c_int
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 518
-for _lib in _libs.values():
-    if not _lib.has("OmIsLocked", "cdecl"):
-        continue
-    OmIsLocked = _lib.get("OmIsLocked", "cdecl")
+if _libs["omapi"].has("OmIsLocked", "cdecl"):
+    OmIsLocked = _libs["omapi"].get("OmIsLocked", "cdecl")
     OmIsLocked.argtypes = [c_int, POINTER(c_int)]
     OmIsLocked.restype = c_int
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 529
-for _lib in _libs.values():
-    if not _lib.has("OmSetLock", "cdecl"):
-        continue
-    OmSetLock = _lib.get("OmSetLock", "cdecl")
+if _libs["omapi"].has("OmSetLock", "cdecl"):
+    OmSetLock = _libs["omapi"].get("OmSetLock", "cdecl")
     OmSetLock.argtypes = [c_int, c_ushort]
     OmSetLock.restype = c_int
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 540
-for _lib in _libs.values():
-    if not _lib.has("OmUnlock", "cdecl"):
-        continue
-    OmUnlock = _lib.get("OmUnlock", "cdecl")
+if _libs["omapi"].has("OmUnlock", "cdecl"):
+    OmUnlock = _libs["omapi"].get("OmUnlock", "cdecl")
     OmUnlock.argtypes = [c_int, c_ushort]
     OmUnlock.restype = c_int
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 550
-for _lib in _libs.values():
-    if not _lib.has("OmSetEcc", "cdecl"):
-        continue
-    OmSetEcc = _lib.get("OmSetEcc", "cdecl")
+if _libs["omapi"].has("OmSetEcc", "cdecl"):
+    OmSetEcc = _libs["omapi"].get("OmSetEcc", "cdecl")
     OmSetEcc.argtypes = [c_int, c_int]
     OmSetEcc.restype = c_int
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 559
-for _lib in _libs.values():
-    if not _lib.has("OmGetEcc", "cdecl"):
-        continue
-    OmGetEcc = _lib.get("OmGetEcc", "cdecl")
+if _libs["omapi"].has("OmGetEcc", "cdecl"):
+    OmGetEcc = _libs["omapi"].get("OmGetEcc", "cdecl")
     OmGetEcc.argtypes = [c_int]
     OmGetEcc.restype = c_int
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 578
-for _lib in _libs.values():
-    if not _lib.has("OmCommand", "cdecl"):
-        continue
-    OmCommand = _lib.get("OmCommand", "cdecl")
+if _libs["omapi"].has("OmCommand", "cdecl"):
+    OmCommand = _libs["omapi"].get("OmCommand", "cdecl")
     OmCommand.argtypes = [c_int, String, String, c_size_t, String, c_uint, POINTER(POINTER(c_char)), c_int]
     OmCommand.restype = c_int
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 611
-for _lib in _libs.values():
-    if not _lib.has("OmGetDelays", "cdecl"):
-        continue
-    OmGetDelays = _lib.get("OmGetDelays", "cdecl")
+if _libs["omapi"].has("OmGetDelays", "cdecl"):
+    OmGetDelays = _libs["omapi"].get("OmGetDelays", "cdecl")
     OmGetDelays.argtypes = [c_int, POINTER(OM_DATETIME), POINTER(OM_DATETIME)]
     OmGetDelays.restype = c_int
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 629
-for _lib in _libs.values():
-    if not _lib.has("OmSetDelays", "cdecl"):
-        continue
-    OmSetDelays = _lib.get("OmSetDelays", "cdecl")
+if _libs["omapi"].has("OmSetDelays", "cdecl"):
+    OmSetDelays = _libs["omapi"].get("OmSetDelays", "cdecl")
     OmSetDelays.argtypes = [c_int, OM_DATETIME, OM_DATETIME]
     OmSetDelays.restype = c_int
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 638
-for _lib in _libs.values():
-    if not _lib.has("OmGetSessionId", "cdecl"):
-        continue
-    OmGetSessionId = _lib.get("OmGetSessionId", "cdecl")
+if _libs["omapi"].has("OmGetSessionId", "cdecl"):
+    OmGetSessionId = _libs["omapi"].get("OmGetSessionId", "cdecl")
     OmGetSessionId.argtypes = [c_int, POINTER(c_uint)]
     OmGetSessionId.restype = c_int
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 649
-for _lib in _libs.values():
-    if not _lib.has("OmSetSessionId", "cdecl"):
-        continue
-    OmSetSessionId = _lib.get("OmSetSessionId", "cdecl")
+if _libs["omapi"].has("OmSetSessionId", "cdecl"):
+    OmSetSessionId = _libs["omapi"].get("OmSetSessionId", "cdecl")
     OmSetSessionId.argtypes = [c_int, c_uint]
     OmSetSessionId.restype = c_int
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 666
-for _lib in _libs.values():
-    if not _lib.has("OmGetMetadata", "cdecl"):
-        continue
-    OmGetMetadata = _lib.get("OmGetMetadata", "cdecl")
+if _libs["omapi"].has("OmGetMetadata", "cdecl"):
+    OmGetMetadata = _libs["omapi"].get("OmGetMetadata", "cdecl")
     OmGetMetadata.argtypes = [c_int, String]
     OmGetMetadata.restype = c_int
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 679
-for _lib in _libs.values():
-    if not _lib.has("OmSetMetadata", "cdecl"):
-        continue
-    OmSetMetadata = _lib.get("OmSetMetadata", "cdecl")
+if _libs["omapi"].has("OmSetMetadata", "cdecl"):
+    OmSetMetadata = _libs["omapi"].get("OmSetMetadata", "cdecl")
     OmSetMetadata.argtypes = [c_int, String, c_int]
     OmSetMetadata.restype = c_int
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 688
-for _lib in _libs.values():
-    if not _lib.has("OmGetLastConfigTime", "cdecl"):
-        continue
-    OmGetLastConfigTime = _lib.get("OmGetLastConfigTime", "cdecl")
+if _libs["omapi"].has("OmGetLastConfigTime", "cdecl"):
+    OmGetLastConfigTime = _libs["omapi"].get("OmGetLastConfigTime", "cdecl")
     OmGetLastConfigTime.argtypes = [c_int, POINTER(OM_DATETIME)]
     OmGetLastConfigTime.restype = c_int
-    break
 
 enum_anon_22 = c_int# /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 702
 
@@ -2524,49 +2450,34 @@ OM_ERASE_WIPE = 3# /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 702
 OM_ERASE_LEVEL = enum_anon_22# /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 702
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 723
-for _lib in _libs.values():
-    if not _lib.has("OmEraseDataAndCommit", "cdecl"):
-        continue
-    OmEraseDataAndCommit = _lib.get("OmEraseDataAndCommit", "cdecl")
+if _libs["omapi"].has("OmEraseDataAndCommit", "cdecl"):
+    OmEraseDataAndCommit = _libs["omapi"].get("OmEraseDataAndCommit", "cdecl")
     OmEraseDataAndCommit.argtypes = [c_int, OM_ERASE_LEVEL]
     OmEraseDataAndCommit.restype = c_int
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 776
-for _lib in _libs.values():
-    if not _lib.has("OmGetAccelConfig", "cdecl"):
-        continue
-    OmGetAccelConfig = _lib.get("OmGetAccelConfig", "cdecl")
+if _libs["omapi"].has("OmGetAccelConfig", "cdecl"):
+    OmGetAccelConfig = _libs["omapi"].get("OmGetAccelConfig", "cdecl")
     OmGetAccelConfig.argtypes = [c_int, POINTER(c_int), POINTER(c_int)]
     OmGetAccelConfig.restype = c_int
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 789
-for _lib in _libs.values():
-    if not _lib.has("OmSetAccelConfig", "cdecl"):
-        continue
-    OmSetAccelConfig = _lib.get("OmSetAccelConfig", "cdecl")
+if _libs["omapi"].has("OmSetAccelConfig", "cdecl"):
+    OmSetAccelConfig = _libs["omapi"].get("OmSetAccelConfig", "cdecl")
     OmSetAccelConfig.argtypes = [c_int, c_int, c_int]
     OmSetAccelConfig.restype = c_int
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 800
-for _lib in _libs.values():
-    if not _lib.has("OmGetMaxSamples", "cdecl"):
-        continue
-    OmGetMaxSamples = _lib.get("OmGetMaxSamples", "cdecl")
+if _libs["omapi"].has("OmGetMaxSamples", "cdecl"):
+    OmGetMaxSamples = _libs["omapi"].get("OmGetMaxSamples", "cdecl")
     OmGetMaxSamples.argtypes = [c_int, POINTER(c_int)]
     OmGetMaxSamples.restype = c_int
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 812
-for _lib in _libs.values():
-    if not _lib.has("OmSetMaxSamples", "cdecl"):
-        continue
-    OmSetMaxSamples = _lib.get("OmSetMaxSamples", "cdecl")
+if _libs["omapi"].has("OmSetMaxSamples", "cdecl"):
+    OmSetMaxSamples = _libs["omapi"].get("OmSetMaxSamples", "cdecl")
     OmSetMaxSamples.argtypes = [c_int, c_int]
     OmSetMaxSamples.restype = c_int
-    break
 
 enum_anon_23 = c_int# /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 857
 
@@ -2587,199 +2498,136 @@ OmDownloadCallback = CFUNCTYPE(UNCHECKED(None), POINTER(None), c_int, OM_DOWNLOA
 OmDownloadChunkCallback = CFUNCTYPE(UNCHECKED(None), POINTER(None), c_int, POINTER(None), c_int, c_int)# /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 876
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 885
-for _lib in _libs.values():
-    if not _lib.has("OmSetDownloadCallback", "cdecl"):
-        continue
-    OmSetDownloadCallback = _lib.get("OmSetDownloadCallback", "cdecl")
+if _libs["omapi"].has("OmSetDownloadCallback", "cdecl"):
+    OmSetDownloadCallback = _libs["omapi"].get("OmSetDownloadCallback", "cdecl")
     OmSetDownloadCallback.argtypes = [OmDownloadCallback, POINTER(None)]
     OmSetDownloadCallback.restype = c_int
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 895
-for _lib in _libs.values():
-    if not _lib.has("OmSetDownloadChunkCallback", "cdecl"):
-        continue
-    OmSetDownloadChunkCallback = _lib.get("OmSetDownloadChunkCallback", "cdecl")
+if _libs["omapi"].has("OmSetDownloadChunkCallback", "cdecl"):
+    OmSetDownloadChunkCallback = _libs["omapi"].get("OmSetDownloadChunkCallback", "cdecl")
     OmSetDownloadChunkCallback.argtypes = [OmDownloadChunkCallback, POINTER(None)]
     OmSetDownloadChunkCallback.restype = c_int
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 904
-for _lib in _libs.values():
-    if not _lib.has("OmGetDataFileSize", "cdecl"):
-        continue
-    OmGetDataFileSize = _lib.get("OmGetDataFileSize", "cdecl")
+if _libs["omapi"].has("OmGetDataFileSize", "cdecl"):
+    OmGetDataFileSize = _libs["omapi"].get("OmGetDataFileSize", "cdecl")
     OmGetDataFileSize.argtypes = [c_int]
     OmGetDataFileSize.restype = c_int
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 914
-for _lib in _libs.values():
-    if not _lib.has("OmGetDataFilename", "cdecl"):
-        continue
-    OmGetDataFilename = _lib.get("OmGetDataFilename", "cdecl")
+if _libs["omapi"].has("OmGetDataFilename", "cdecl"):
+    OmGetDataFilename = _libs["omapi"].get("OmGetDataFilename", "cdecl")
     OmGetDataFilename.argtypes = [c_int, String]
     OmGetDataFilename.restype = c_int
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 927
-for _lib in _libs.values():
-    if not _lib.has("OmGetDataRange", "cdecl"):
-        continue
-    OmGetDataRange = _lib.get("OmGetDataRange", "cdecl")
+if _libs["omapi"].has("OmGetDataRange", "cdecl"):
+    OmGetDataRange = _libs["omapi"].get("OmGetDataRange", "cdecl")
     OmGetDataRange.argtypes = [c_int, POINTER(c_int), POINTER(c_int), POINTER(c_int), POINTER(OM_DATETIME), POINTER(OM_DATETIME)]
     OmGetDataRange.restype = c_int
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 943
-for _lib in _libs.values():
-    if not _lib.has("OmBeginDownloading", "cdecl"):
-        continue
-    OmBeginDownloading = _lib.get("OmBeginDownloading", "cdecl")
+if _libs["omapi"].has("OmBeginDownloading", "cdecl"):
+    OmBeginDownloading = _libs["omapi"].get("OmBeginDownloading", "cdecl")
     OmBeginDownloading.argtypes = [c_int, c_int, c_int, String]
     OmBeginDownloading.restype = c_int
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 961
-for _lib in _libs.values():
-    if not _lib.has("OmBeginDownloadingReference", "cdecl"):
-        continue
-    OmBeginDownloadingReference = _lib.get("OmBeginDownloadingReference", "cdecl")
+if _libs["omapi"].has("OmBeginDownloadingReference", "cdecl"):
+    OmBeginDownloadingReference = _libs["omapi"].get("OmBeginDownloadingReference", "cdecl")
     OmBeginDownloadingReference.argtypes = [c_int, c_int, c_int, String, POINTER(None)]
     OmBeginDownloadingReference.restype = c_int
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 976
-for _lib in _libs.values():
-    if not _lib.has("OmQueryDownload", "cdecl"):
-        continue
-    OmQueryDownload = _lib.get("OmQueryDownload", "cdecl")
+if _libs["omapi"].has("OmQueryDownload", "cdecl"):
+    OmQueryDownload = _libs["omapi"].get("OmQueryDownload", "cdecl")
     OmQueryDownload.argtypes = [c_int, POINTER(OM_DOWNLOAD_STATUS), POINTER(c_int)]
     OmQueryDownload.restype = c_int
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 991
-for _lib in _libs.values():
-    if not _lib.has("OmWaitForDownload", "cdecl"):
-        continue
-    OmWaitForDownload = _lib.get("OmWaitForDownload", "cdecl")
+if _libs["omapi"].has("OmWaitForDownload", "cdecl"):
+    OmWaitForDownload = _libs["omapi"].get("OmWaitForDownload", "cdecl")
     OmWaitForDownload.argtypes = [c_int, POINTER(OM_DOWNLOAD_STATUS), POINTER(c_int)]
     OmWaitForDownload.restype = c_int
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 1001
-for _lib in _libs.values():
-    if not _lib.has("OmCancelDownload", "cdecl"):
-        continue
-    OmCancelDownload = _lib.get("OmCancelDownload", "cdecl")
+if _libs["omapi"].has("OmCancelDownload", "cdecl"):
+    OmCancelDownload = _libs["omapi"].get("OmCancelDownload", "cdecl")
     OmCancelDownload.argtypes = [c_int]
     OmCancelDownload.restype = c_int
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 1044
-for _lib in _libs.values():
-    if not _lib.has("OmErrorString", "cdecl"):
-        continue
-    OmErrorString = _lib.get("OmErrorString", "cdecl")
+if _libs["omapi"].has("OmErrorString", "cdecl"):
+    OmErrorString = _libs["omapi"].get("OmErrorString", "cdecl")
     OmErrorString.argtypes = [c_int]
     OmErrorString.restype = c_char_p
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 1099
-for _lib in _libs.values():
-    if not _lib.has("OmDateTimeFromString", "cdecl"):
-        continue
-    OmDateTimeFromString = _lib.get("OmDateTimeFromString", "cdecl")
+if _libs["omapi"].has("OmDateTimeFromString", "cdecl"):
+    OmDateTimeFromString = _libs["omapi"].get("OmDateTimeFromString", "cdecl")
     OmDateTimeFromString.argtypes = [String]
     OmDateTimeFromString.restype = OM_DATETIME
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 1103
-for _lib in _libs.values():
-    if not _lib.has("OmDateTimeToString", "cdecl"):
-        continue
-    OmDateTimeToString = _lib.get("OmDateTimeToString", "cdecl")
+if _libs["omapi"].has("OmDateTimeToString", "cdecl"):
+    OmDateTimeToString = _libs["omapi"].get("OmDateTimeToString", "cdecl")
     OmDateTimeToString.argtypes = [OM_DATETIME, String]
     if sizeof(c_int) == sizeof(c_void_p):
         OmDateTimeToString.restype = ReturnString
     else:
         OmDateTimeToString.restype = String
         OmDateTimeToString.errcheck = ReturnString
-    break
 
 OmReaderHandle = POINTER(None)# /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 1130
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 1161
-for _lib in _libs.values():
-    if not _lib.has("OmReaderOpen", "cdecl"):
-        continue
-    OmReaderOpen = _lib.get("OmReaderOpen", "cdecl")
+if _libs["omapi"].has("OmReaderOpen", "cdecl"):
+    OmReaderOpen = _libs["omapi"].get("OmReaderOpen", "cdecl")
     OmReaderOpen.argtypes = [String]
     OmReaderOpen.restype = OmReaderHandle
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 1174
-for _lib in _libs.values():
-    if not _lib.has("OmReaderDataRange", "cdecl"):
-        continue
-    OmReaderDataRange = _lib.get("OmReaderDataRange", "cdecl")
+if _libs["omapi"].has("OmReaderDataRange", "cdecl"):
+    OmReaderDataRange = _libs["omapi"].get("OmReaderDataRange", "cdecl")
     OmReaderDataRange.argtypes = [OmReaderHandle, POINTER(c_int), POINTER(c_int), POINTER(c_int), POINTER(OM_DATETIME), POINTER(OM_DATETIME)]
     OmReaderDataRange.restype = c_int
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 1184
-for _lib in _libs.values():
-    if not _lib.has("OmReaderMetadata", "cdecl"):
-        continue
-    OmReaderMetadata = _lib.get("OmReaderMetadata", "cdecl")
+if _libs["omapi"].has("OmReaderMetadata", "cdecl"):
+    OmReaderMetadata = _libs["omapi"].get("OmReaderMetadata", "cdecl")
     OmReaderMetadata.argtypes = [OmReaderHandle, POINTER(c_int), POINTER(c_uint)]
     OmReaderMetadata.restype = c_char_p
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 1192
-for _lib in _libs.values():
-    if not _lib.has("OmReaderDataBlockPosition", "cdecl"):
-        continue
-    OmReaderDataBlockPosition = _lib.get("OmReaderDataBlockPosition", "cdecl")
+if _libs["omapi"].has("OmReaderDataBlockPosition", "cdecl"):
+    OmReaderDataBlockPosition = _libs["omapi"].get("OmReaderDataBlockPosition", "cdecl")
     OmReaderDataBlockPosition.argtypes = [OmReaderHandle]
     OmReaderDataBlockPosition.restype = c_int
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 1201
-for _lib in _libs.values():
-    if not _lib.has("OmReaderDataBlockSeek", "cdecl"):
-        continue
-    OmReaderDataBlockSeek = _lib.get("OmReaderDataBlockSeek", "cdecl")
+if _libs["omapi"].has("OmReaderDataBlockSeek", "cdecl"):
+    OmReaderDataBlockSeek = _libs["omapi"].get("OmReaderDataBlockSeek", "cdecl")
     OmReaderDataBlockSeek.argtypes = [OmReaderHandle, c_int]
     OmReaderDataBlockSeek.restype = c_int
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 1213
-for _lib in _libs.values():
-    if not _lib.has("OmReaderNextBlock", "cdecl"):
-        continue
-    OmReaderNextBlock = _lib.get("OmReaderNextBlock", "cdecl")
+if _libs["omapi"].has("OmReaderNextBlock", "cdecl"):
+    OmReaderNextBlock = _libs["omapi"].get("OmReaderNextBlock", "cdecl")
     OmReaderNextBlock.argtypes = [OmReaderHandle]
     OmReaderNextBlock.restype = c_int
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 1225
-for _lib in _libs.values():
-    if not _lib.has("OmReaderBuffer", "cdecl"):
-        continue
-    OmReaderBuffer = _lib.get("OmReaderBuffer", "cdecl")
+if _libs["omapi"].has("OmReaderBuffer", "cdecl"):
+    OmReaderBuffer = _libs["omapi"].get("OmReaderBuffer", "cdecl")
     OmReaderBuffer.argtypes = [OmReaderHandle]
     OmReaderBuffer.restype = POINTER(c_short)
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 1240
-for _lib in _libs.values():
-    if not _lib.has("OmReaderTimestamp", "cdecl"):
-        continue
-    OmReaderTimestamp = _lib.get("OmReaderTimestamp", "cdecl")
+if _libs["omapi"].has("OmReaderTimestamp", "cdecl"):
+    OmReaderTimestamp = _libs["omapi"].get("OmReaderTimestamp", "cdecl")
     OmReaderTimestamp.argtypes = [OmReaderHandle, c_int, POINTER(c_ushort)]
     OmReaderTimestamp.restype = OM_DATETIME
-    break
 
 enum_anon_24 = c_int# /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 1275
 
@@ -2824,13 +2672,10 @@ OM_VALUE_MAG_AXIS = 18# /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 1275
 OM_READER_VALUE_TYPE = enum_anon_24# /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 1275
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 1287
-for _lib in _libs.values():
-    if not _lib.has("OmReaderGetValue", "cdecl"):
-        continue
-    OmReaderGetValue = _lib.get("OmReaderGetValue", "cdecl")
+if _libs["omapi"].has("OmReaderGetValue", "cdecl"):
+    OmReaderGetValue = _libs["omapi"].get("OmReaderGetValue", "cdecl")
     OmReaderGetValue.argtypes = [OmReaderHandle, OM_READER_VALUE_TYPE]
     OmReaderGetValue.restype = c_int
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 1314
 class struct_anon_25(Structure):
@@ -2879,13 +2724,10 @@ struct_anon_25._fields_ = [
 OM_READER_HEADER_PACKET = struct_anon_25# /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 1314
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 1325
-for _lib in _libs.values():
-    if not _lib.has("OmReaderRawHeaderPacket", "cdecl"):
-        continue
-    OmReaderRawHeaderPacket = _lib.get("OmReaderRawHeaderPacket", "cdecl")
+if _libs["omapi"].has("OmReaderRawHeaderPacket", "cdecl"):
+    OmReaderRawHeaderPacket = _libs["omapi"].get("OmReaderRawHeaderPacket", "cdecl")
     OmReaderRawHeaderPacket.argtypes = [OmReaderHandle]
     OmReaderRawHeaderPacket.restype = POINTER(OM_READER_HEADER_PACKET)
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 1351
 class struct_anon_26(Structure):
@@ -2932,22 +2774,16 @@ struct_anon_26._fields_ = [
 OM_READER_DATA_PACKET = struct_anon_26# /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 1351
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 1363
-for _lib in _libs.values():
-    if not _lib.has("OmReaderRawDataPacket", "cdecl"):
-        continue
-    OmReaderRawDataPacket = _lib.get("OmReaderRawDataPacket", "cdecl")
+if _libs["omapi"].has("OmReaderRawDataPacket", "cdecl"):
+    OmReaderRawDataPacket = _libs["omapi"].get("OmReaderRawDataPacket", "cdecl")
     OmReaderRawDataPacket.argtypes = [OmReaderHandle]
     OmReaderRawDataPacket.restype = POINTER(OM_READER_DATA_PACKET)
-    break
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 1372
-for _lib in _libs.values():
-    if not _lib.has("OmReaderClose", "cdecl"):
-        continue
-    OmReaderClose = _lib.get("OmReaderClose", "cdecl")
+if _libs["omapi"].has("OmReaderClose", "cdecl"):
+    OmReaderClose = _libs["omapi"].get("OmReaderClose", "cdecl")
     OmReaderClose.argtypes = [OmReaderHandle]
     OmReaderClose.restype = None
-    break
 
 # <built-in>
 try:
@@ -2955,9 +2791,9 @@ try:
 except:
     pass
 
-__const = c_int# <command-line>: 4
+__const = c_int# <command-line>: 2
 
-# <command-line>: 7
+# <command-line>: 5
 try:
     CTYPESGEN = 1
 except:
@@ -2983,7 +2819,7 @@ except:
 
 # /usr/include/stdc-predef.h: 58
 try:
-    __STDC_ISO_10646__ = 201706.0
+    __STDC_ISO_10646__ = 201706
 except:
     pass
 
@@ -3045,7 +2881,7 @@ except:
 
 # /usr/include/features.h: 281
 try:
-    _POSIX_C_SOURCE = 200809.0
+    _POSIX_C_SOURCE = 200809
 except:
     pass
 
@@ -3203,6 +3039,10 @@ try:
 except:
     pass
 
+__restrict = c_int# /usr/include/x86_64-linux-gnu/sys/cdefs.h: 377
+
+__restrict_arr = c_int# /usr/include/x86_64-linux-gnu/sys/cdefs.h: 393
+
 # /usr/include/x86_64-linux-gnu/sys/cdefs.h: 405
 def __glibc_unlikely(cond):
     return cond
@@ -3323,25 +3163,25 @@ except:
 
 # /usr/include/x86_64-linux-gnu/bits/waitflags.h: 33
 try:
-    WNOWAIT = 16777216
+    WNOWAIT = 0x01000000
 except:
     pass
 
 # /usr/include/x86_64-linux-gnu/bits/waitflags.h: 36
 try:
-    __WNOTHREAD = 536870912
+    __WNOTHREAD = 0x20000000
 except:
     pass
 
 # /usr/include/x86_64-linux-gnu/bits/waitflags.h: 38
 try:
-    __WALL = 1073741824
+    __WALL = 0x40000000
 except:
     pass
 
 # /usr/include/x86_64-linux-gnu/bits/waitflags.h: 39
 try:
-    __WCLONE = 2147483648
+    __WCLONE = 0x80000000
 except:
     pass
 
@@ -3353,11 +3193,11 @@ except:
 
 # /usr/include/x86_64-linux-gnu/bits/waitstatus.h: 28
 def __WEXITSTATUS(status):
-    return ((status & 65280) >> 8)
+    return ((status & 0xff00) >> 8)
 
 # /usr/include/x86_64-linux-gnu/bits/waitstatus.h: 31
 def __WTERMSIG(status):
-    return (status & 127)
+    return (status & 0x7f)
 
 # /usr/include/x86_64-linux-gnu/bits/waitstatus.h: 34
 def __WSTOPSIG(status):
@@ -3369,11 +3209,11 @@ def __WIFEXITED(status):
 
 # /usr/include/x86_64-linux-gnu/bits/waitstatus.h: 40
 def __WIFSIGNALED(status):
-    return (((c_char ((((status & 127) + 1)))).value >> 1) > 0)
+    return (((c_char ((((status & 0x7f) + 1)))).value >> 1) > 0)
 
 # /usr/include/x86_64-linux-gnu/bits/waitstatus.h: 44
 def __WIFSTOPPED(status):
-    return ((status & 255) == 127)
+    return ((status & 0xff) == 0x7f)
 
 # /usr/include/x86_64-linux-gnu/bits/waitstatus.h: 49
 def __WIFCONTINUED(status):
@@ -3389,17 +3229,17 @@ def __W_EXITCODE(ret, sig):
 
 # /usr/include/x86_64-linux-gnu/bits/waitstatus.h: 57
 def __W_STOPCODE(sig):
-    return ((sig << 8) | 127)
+    return ((sig << 8) | 0x7f)
 
 # /usr/include/x86_64-linux-gnu/bits/waitstatus.h: 58
 try:
-    __W_CONTINUED = 65535
+    __W_CONTINUED = 0xffff
 except:
     pass
 
 # /usr/include/x86_64-linux-gnu/bits/waitstatus.h: 59
 try:
-    __WCOREFLAG = 128
+    __WCOREFLAG = 0x80
 except:
     pass
 
@@ -3619,9 +3459,9 @@ try:
 except:
     pass
 
-__S16_TYPE = c_int# /usr/include/x86_64-linux-gnu/bits/types.h: 109
+__S16_TYPE = c_short# /usr/include/x86_64-linux-gnu/bits/types.h: 109
 
-__U16_TYPE = c_uint# /usr/include/x86_64-linux-gnu/bits/types.h: 110
+__U16_TYPE = c_ushort# /usr/include/x86_64-linux-gnu/bits/types.h: 110
 
 __S32_TYPE = c_int# /usr/include/x86_64-linux-gnu/bits/types.h: 111
 
@@ -3820,15 +3660,15 @@ except:
 
 # /usr/include/x86_64-linux-gnu/bits/byteswap.h: 30
 def __bswap_constant_16(x):
-    return (__uint16_t (ord_if_char((((x >> 8) & 255) | ((x & 255) << 8))))).value
+    return (__uint16_t (ord_if_char((((x >> 8) & 0xff) | ((x & 0xff) << 8))))).value
 
 # /usr/include/x86_64-linux-gnu/bits/byteswap.h: 44
 def __bswap_constant_32(x):
-    return (((((x & 4278190080) >> 24) | ((x & 16711680) >> 8)) | ((x & 65280) << 8)) | ((x & 255) << 24))
+    return (((((x & 0xff000000) >> 24) | ((x & 0x00ff0000) >> 8)) | ((x & 0x0000ff00) << 8)) | ((x & 0x000000ff) << 24))
 
 # /usr/include/x86_64-linux-gnu/bits/byteswap.h: 59
 def __bswap_constant_64(x):
-    return (((((((((x & 18374686479671623680) >> 56) | ((x & 71776119061217280) >> 40)) | ((x & 280375465082880) >> 24)) | ((x & 1095216660480) >> 8)) | ((x & 4278190080) << 8)) | ((x & 16711680) << 24)) | ((x & 65280) << 40)) | ((x & 255) << 56))
+    return (((((((((x & 0xff00000000000000) >> 56) | ((x & 0x00ff000000000000) >> 40)) | ((x & 0x0000ff0000000000) >> 24)) | ((x & 0x000000ff00000000) >> 8)) | ((x & 0x00000000ff000000) << 8)) | ((x & 0x0000000000ff0000) << 24)) | ((x & 0x000000000000ff00) << 40)) | ((x & 0x00000000000000ff) << 56))
 
 # /usr/include/x86_64-linux-gnu/bits/uintn-identity.h: 24
 try:
@@ -4202,31 +4042,31 @@ def OM_FAILED(value):
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 1076
 def OM_DATETIME_FROM_YMDHMS(year, month, day, hours, minutes, seconds):
-    return ((((((((OM_DATETIME (ord_if_char((year % 100)))).value & 63) << 26) | (((OM_DATETIME (ord_if_char(month))).value & 15) << 22)) | (((OM_DATETIME (ord_if_char(day))).value & 31) << 17)) | (((OM_DATETIME (ord_if_char(hours))).value & 31) << 12)) | (((OM_DATETIME (ord_if_char(minutes))).value & 63) << 6)) | ((OM_DATETIME (ord_if_char(seconds))).value & 63))
+    return ((((((((OM_DATETIME (ord_if_char((year % 100)))).value & 0x3f) << 26) | (((OM_DATETIME (ord_if_char(month))).value & 0x0f) << 22)) | (((OM_DATETIME (ord_if_char(day))).value & 0x1f) << 17)) | (((OM_DATETIME (ord_if_char(hours))).value & 0x1f) << 12)) | (((OM_DATETIME (ord_if_char(minutes))).value & 0x3f) << 6)) | ((OM_DATETIME (ord_if_char(seconds))).value & 0x3f))
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 1084
 def OM_DATETIME_YEAR(dateTime):
-    return ((c_uint (ord_if_char((c_ubyte (ord_if_char(((dateTime >> 26) & 63)))).value))).value + 2000)
+    return ((c_uint (ord_if_char((c_ubyte (ord_if_char(((dateTime >> 26) & 0x3f)))).value))).value + 2000)
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 1085
 def OM_DATETIME_MONTH(dateTime):
-    return (c_ubyte (ord_if_char(((dateTime >> 22) & 15)))).value
+    return (c_ubyte (ord_if_char(((dateTime >> 22) & 0x0f)))).value
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 1086
 def OM_DATETIME_DAY(dateTime):
-    return (c_ubyte (ord_if_char(((dateTime >> 17) & 31)))).value
+    return (c_ubyte (ord_if_char(((dateTime >> 17) & 0x1f)))).value
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 1087
 def OM_DATETIME_HOURS(dateTime):
-    return (c_ubyte (ord_if_char(((dateTime >> 12) & 31)))).value
+    return (c_ubyte (ord_if_char(((dateTime >> 12) & 0x1f)))).value
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 1088
 def OM_DATETIME_MINUTES(dateTime):
-    return (c_ubyte (ord_if_char(((dateTime >> 6) & 63)))).value
+    return (c_ubyte (ord_if_char(((dateTime >> 6) & 0x3f)))).value
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 1089
 def OM_DATETIME_SECONDS(dateTime):
-    return (c_ubyte (ord_if_char((dateTime & 63)))).value
+    return (c_ubyte (ord_if_char((dateTime & 0x3f)))).value
 
 # /mnt/d/Newcastle/Projects/libomapi/include/omapi.h: 1090
 try:

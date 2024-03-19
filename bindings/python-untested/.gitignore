@@ -1,1 +1,6 @@
 ctypesgen/
+libomapi.a
+libomapi.so
+libomapi.dll
+libomapi64.dll
+__pycache__
