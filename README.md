@@ -1,11 +1,16 @@
 # libomapi
 
-Open Movement C-based API "OMAPI", plus bindings for .NET, Java, Node NAPI, Node FFI.
+Open Movement C-based API "OMAPI", with bindings for .NET, Java, Node NAPI, Node FFI.
 
-A rendering of the Doxygen documentation is available at: http://digitalinteraction.github.io/openmovement/omapi/html/
+See also:
 
-NOTE: This repository has been split from various parts of the OpenMovement mono-repo, and some inter-library paths may need repairing.
+* [Documentation for libOMAPI](http://digitalinteraction.github.io/openmovement/omapi/html/)
+* [AX Device Technical Documentation](https://github.com/digitalinteraction/openmovement/blob/master/Docs/ax3/ax3-technical.md)
+* [AX Research: Data Analysis](https://github.com/digitalinteraction/openmovement/blob/master/Docs/ax3/ax3-research.md#data-analysis)
 
+This repository has been split from various parts of the OpenMovement mono-repo, and some inter-library paths may need repairing.
+
+<!--
 
 ## Ports
 
@@ -34,8 +39,9 @@ NOTE: This repository has been split from various parts of the OpenMovement mono
 mount /dev/sda1 /mnt/usb
 ```
 
-
 ---
+
+-->
 
 <!--
 
