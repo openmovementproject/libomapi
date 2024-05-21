@@ -1,5 +1,7 @@
 /*.def
 /*.a
+/*.so
+/*.dylib
 /*.dll
 /*.exp
 /*.lib

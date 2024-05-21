@@ -100,6 +100,10 @@ def deviceCallback(ref, deviceId, status):
         print("OMDEVICE: DISCONNECTED: " + str(deviceId))
 
 
+#import pprint
+#pprint.pprint(vars(om))
+
+
 # Set the log callback
 print("OmSetLogCallback()")
 if om.OM_FAILED(om.OmSetLogCallback(logCallback, None)):

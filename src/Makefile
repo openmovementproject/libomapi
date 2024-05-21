@@ -25,6 +25,21 @@ else
 	endif
 endif
 
+.PHONY: default
+
+default: libomapi.a
+
+all: libomapi.a
+
+libomapi.dylib : libomapi.a
+	$(CC) -dynamiclib -o libomapi.dylib libomapi.a
+
+libomapi.dll : libomapi.a
+	$(CC) -shared -o libomapi.dll libomapi.a
+
+libomapi.so : libomapi.a
+	$(CC) -shared -o libomapi.so libomapi.a
+
 libomapi.a : $(OBJECTS)
 	ar rcs libomapi.a $(OBJECTS)
 
@@ -56,4 +71,5 @@ omapi-devicefinder-win.o : omapi-devicefinder-win.cpp
 	$(CC) $(CFLAGS) $(INCLUDES) -c omapi-devicefinder-win.cpp
 
 clean:
-	rm -f *.o libomapi.a
+	rm -f *.o libomapi.a libomapi.so libomapi.dylib libomapi.dll
+

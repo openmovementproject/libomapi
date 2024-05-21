@@ -1,6 +1,14 @@
 ctypesgen/
 libomapi.a
 libomapi.so
+libomapi.dylib
 libomapi.dll
 libomapi64.dll
 __pycache__
+*.bak
+
+# venv
+pyvenv.cfg
+bin
+include
+lib
