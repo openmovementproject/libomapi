@@ -1,4 +1,7 @@
 CC = gcc
+# ifeq ($(UNAME_S),Darwin)
+# 	CC = clang -target arm64-apple-macos11
+# endif
 CFLAGS = -w -c
 LIBS = 
 OBJECTS = omapi-main.o omapi-internal.o omapi-download.o omapi-status.o omapi-reader.o omapi-settings.o
@@ -42,6 +45,7 @@ libomapi.so : libomapi.a
 
 libomapi.a : $(OBJECTS)
 	ar rcs libomapi.a $(OBJECTS)
+	# lipo -info libomapi.a
 
 omapi-main.o : omapi-main.c
 	$(CC) $(CFLAGS) $(INCLUDES) -c omapi-main.c

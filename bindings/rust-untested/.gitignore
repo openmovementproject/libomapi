@@ -1,0 +1,7 @@
+target
+_*
+libomapi.a
+libomapi.so
+libomapi.dylib
+libomapi.dll
+libomapi64.dll

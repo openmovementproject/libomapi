@@ -1,0 +1,14 @@
+[package]
+name = "rustomapi"
+version = "0.1.0"
+edition = "2021"
+build = "build.rs"
+# rustc-link-search = ["."]
+# rustc-link-lib = ["libomapi"]
+# links = "libomapi.a"
+
+
+[dependencies]
+
+[build-dependencies]
+bindgen = "0.69.4"

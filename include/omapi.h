@@ -392,7 +392,7 @@ OM_EXPORT int OmGetDevicePort(int deviceId, char *portBuffer);
 /**
 * Return the path to specified device's filesystem.
 * @param deviceId Identifier of the device.
-* @param[out] pathBuffer A buffer to receive the path to the device's filsystem (of size OM_MAX_PATH).
+* @param[out] pathBuffer A buffer to receive the path to the device's filesystem (of size OM_MAX_PATH).
 * @see OmGetDataFilename()
 * @since 1.7
 */
@@ -768,7 +768,7 @@ OM_EXPORT int OmEraseDataAndCommit(int deviceId, OM_ERASE_LEVEL eraseLevel);
  * Queries the specified device's accelerometer configuration.
  * @param deviceId Identifier of the device.
  * @param[out] rate Pointer to a value to receive the sampling rate in Hz (6 [=6.25], 12 [=12.5], 25, 50, 100, 200, 400, 800, 1600, 3200). Overloaded since 1.8 with negative ranges being "low power" mode.
- * @param[out] range Pointer to a value to receive the sampling range in +/- G (2, 4, 8, 16). Overloaded since 1.8 with the bits 16-32 being the synchronous gyro range in degrees/sec (125, 250, 500, 1000, 2000) with compatable devices.
+ * @param[out] range Pointer to a value to receive the sampling range in +/- G (2, 4, 8, 16). Overloaded since 1.8 with the bits 16-32 being the synchronous gyro range in degrees/sec (125, 250, 500, 1000, 2000) with compatible devices.
  * @return \a OM_OK if successful, an error code otherwise.
  * @see OmSetAccelConfig()
  * @since 1.3, 1.8 for overloaded low-power and synchronous gyro range.
@@ -781,7 +781,7 @@ OM_EXPORT int OmGetAccelConfig(int deviceId, int *rate, int *range);
  * @note This API call does not alter the existing settings, and only takes full effect when OmEraseDataAndCommit() is called.
  * @param deviceId Identifier of the device.
  * @param rate Sampling rate value in Hz (6 [=6.25], 12 [=12.5], 25, 50, 100, 200, 400, 800, 1600, 3200).  Overloaded since 1.8 with negative ranges being "low power" mode.
- * @param range Sampling range value in +/- G (2, 4, 8, 16). Overloaded since 1.8 with the bits 16-32 being the synchronous gyro range in degrees/sec (125, 250, 500, 1000, 2000) with compatable devices.
+ * @param range Sampling range value in +/- G (2, 4, 8, 16). Overloaded since 1.8 with the bits 16-32 being the synchronous gyro range in degrees/sec (125, 250, 500, 1000, 2000) with compatible devices.
  * @return \a OM_OK if successful, an error code otherwise.
  * @see OmGetAccelConfig()
  * @since 1.3, 1.8 for overloaded low-power and synchronous gyro range.
