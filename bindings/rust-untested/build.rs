@@ -7,18 +7,29 @@ use std::path::PathBuf;
 
 fn main() {
     let dir = env::var("CARGO_MANIFEST_DIR").unwrap();
-    
+
     println!("cargo:rerun-if-changed=wrapper.h");
     println!("cargo:rerun-if-changed=../../include/omapi.h");
     
     // Tell cargo to tell rustc to link the library.
     println!("cargo:rustc-link-search=native={}", Path::new(&dir).display());   // .join(".")
-    println!("cargo:rustc-link-lib=omapi");
 
-    // .clang_arg("-L.")
-    // .clang_arg("-lomapi")
-
-    // lipo -info libomapi.a target/debug/librustomapi.rlib && nm libomapi.a | grep _OmS | grep -v _OmSe
+    // Windows uses 64-bit version of the dynamic library: libomapi64.dll
+    #[cfg(target_os = "windows")]
+    {
+        println!("cargo:rustc-link-lib=dylib=libomapi64");
+    }
+    // Non-windows will use a static library: (omapi ->) libomapi.a
+    #[cfg(not(target_os = "windows"))]
+    {
+        println!("cargo:rustc-link-lib=static=omapi");
+        //println!("cargo:rustc-link-lib=dylib=omapi");
+    }
+    // Linux dynamically needs libudev
+    #[cfg(target_os = "linux")]
+    {
+        println!("cargo:rustc-link-lib=dylib=udev"); // sudo apt install libudev-dev
+    }
 
     // The bindgen::Builder is the main entry point to bindgen, and lets you build up options for the resulting bindings.
     let bindings = bindgen::Builder::default()

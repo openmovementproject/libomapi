@@ -29,29 +29,44 @@ sed -i '.bak' -e 's/load_library("omapi")/load_library("omapi" + ("64" if sys.pl
 # Alternative: Use add_library_search_dirs() to use a subdirectory for the 64-bit library
 
 
-
 # Copy .lib so paths are relative
 if [ -e ../../src/libomapi.a ]; then
-  cp ../../src/libomapi.a .
+ cp ../../src/libomapi.a .
 fi
 
-# Copy .so for test program
+# Copy .so for test program -- build with: make libomapi.so
 if [ -e ../../src/libomapi.so ]; then
-  cp ../../src/libomapi.so .
+ cp ../../src/libomapi.so .
 fi
 
 # Copy .dylib for test program
 if [ -e ../../src/libomapi.dylib ]; then
-  cp ../../src/libomapi.dylib .
+ cp ../../src/libomapi.dylib .
 fi
 
 # Copy .dll for test program on Windows -- build with: build.cmd
 if [ -e ../../src/libomapi.dll ]; then
-  cp ../../src/libomapi.dll .
+ cp ../../src/libomapi.dll .
+fi
+
+# Copy stub .lib for test program on Windows -- build with: build.cmd
+if [ -e ../../src/libomapi.lib ]; then
+ cp ../../src/libomapi.lib .
 fi
 
 # Copy 64-bit .dll for test program on Windows -- build with: build.cmd x64
-if [ -e ../../src/libomapi.dll ]; then
-  cp ../../src/libomapi64.dll .
+if [ -e ../../src/libomapi64.dll ]; then
+ cp ../../src/libomapi64.dll .
 fi
+
+# Copy stub .lib for test program on Windows -- build with: build.cmd x64
+if [ -e ../../src/libomapi64.lib ]; then
+ cp ../../src/libomapi64.lib .
+fi
+
+
+#nm libomapi.a | grep _OmS | grep -v _OmSe
+
+#dumpbin /exports libomapi.dll
+#dumpbin /exports libomapi64.dll
 

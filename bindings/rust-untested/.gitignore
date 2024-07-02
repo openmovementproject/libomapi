@@ -3,5 +3,7 @@ _*
 libomapi.a
 libomapi.so
 libomapi.dylib
+libomapi.lib
 libomapi.dll
 libomapi64.dll
+libomapi64.lib

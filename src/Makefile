@@ -2,6 +2,9 @@ CC = gcc
 # ifeq ($(UNAME_S),Darwin)
 # 	CC = clang -target arm64-apple-macos11
 # endif
+
+# sudo apt install libudev-dev
+
 CFLAGS = -w -c
 LIBS = 
 OBJECTS = omapi-main.o omapi-internal.o omapi-download.o omapi-status.o omapi-reader.o omapi-settings.o

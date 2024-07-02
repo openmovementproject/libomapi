@@ -2,7 +2,9 @@ ctypesgen/
 libomapi.a
 libomapi.so
 libomapi.dylib
+libomapi.lib
 libomapi.dll
+libomapi64.lib
 libomapi64.dll
 __pycache__
 *.bak

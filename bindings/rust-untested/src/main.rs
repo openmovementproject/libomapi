@@ -17,5 +17,5 @@ fn main() {
         println!("OmShutdown()...");
         rustomapi::OmShutdown();
     }
-    
+
 }
