@@ -30,6 +30,13 @@ fn main() {
     {
         println!("cargo:rustc-link-lib=dylib=udev"); // sudo apt install libudev-dev
     }
+    // macOS needs the frameworks: Cocoa, IOKit, DiskArbitration
+    #[cfg(target_os = "macos")]
+    {
+        println!("cargo:rustc-link-lib=framework=Cocoa");
+        println!("cargo:rustc-link-lib=framework=IOKit");
+        println!("cargo:rustc-link-lib=framework=DiskArbitration");
+    }
 
     // The bindgen::Builder is the main entry point to bindgen, and lets you build up options for the resulting bindings.
     let bindings = bindgen::Builder::default()

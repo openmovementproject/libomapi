@@ -7,3 +7,4 @@ libomapi.lib
 libomapi.dll
 libomapi64.dll
 libomapi64.lib
+bindings.rs
