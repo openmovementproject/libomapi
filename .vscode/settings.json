@@ -1,4 +1,8 @@
 {
+    "cSpell.ignorePaths" : [
+        "bindings/python-untested/pylibomapi.py",
+        "bindings/rust-untested/bindings.rs"
+    ],
     "cSpell.words": [
         "abstime",
         "ACCERR",
