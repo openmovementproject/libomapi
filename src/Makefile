@@ -3,7 +3,7 @@ CC = gcc
 # 	CC = clang -target arm64-apple-macos11
 # endif
 
-# sudo apt install libudev-dev
+# sudo apt install build-essential libpthread-stubs0-dev libudev-dev
 
 CFLAGS = -w -c
 LIBS = 
