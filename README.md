@@ -4,7 +4,7 @@ Open Movement C-based API "OMAPI", with bindings for .NET, Java, Node NAPI, Node
 
 See also:
 
-* [Documentation for libOMAPI](http://digitalinteraction.github.io/openmovement/omapi/html/)
+* [Documentation for libOMAPI](https://openmovement.dev/omapi/html/)
 * [AX Device Technical Documentation](https://github.com/digitalinteraction/openmovement/blob/master/Docs/ax3/ax3-technical.md)
 * [AX Research: Data Analysis](https://github.com/digitalinteraction/openmovement/blob/master/Docs/ax3/ax3-research.md#data-analysis)
 
