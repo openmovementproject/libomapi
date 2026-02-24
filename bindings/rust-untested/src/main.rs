@@ -155,10 +155,10 @@ fn test_device(device_id: i32)
 
 
 fn main() {
-    println!(
-        "Testing...: {:?}",
-        rustomapi::test(123)
-    );
+    // println!(
+    //     "Testing...: {:?}",
+    //     rustomapi::test(123)
+    // );
 
     // Set the log callback
     println!("OmSetLogCallback()");
@@ -179,8 +179,13 @@ fn main() {
     }
 
     unsafe {
-        println!("OmStartup()...");
-        rustomapi::OmStartup(rustomapi::OM_VERSION);
+        println!("OmStartup({})...", rustomapi::OM_VERSION);
+        let result = rustomapi::OmStartup(rustomapi::OM_VERSION);
+        if rustomapi::OM_FAILED(result) {
+            let err_msg = CStr::from_ptr(rustomapi::OmErrorString(result)).to_str().expect("CStr");
+            println!("ERROR: OmStartup() {}", err_msg);
+            process::exit(-1);
+        }
     }
 
     // Query the current number of devices attached

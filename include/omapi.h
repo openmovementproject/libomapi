@@ -63,13 +63,13 @@
 /** @page introduction Introduction to the API
  *  @details
     The Open Movement application programming interface (API) provides an interface to communicate 
-        with AX3 longitudinal movement data loggers.  The devices feature a state of the art MEMS 
-        3-axis accelerometer, flash-based on-board memory, a real time quartz clock, temperature 
-        sensor and light sensor. 
+        with AX3/AX6 longitudinal movement data loggers.  The devices feature a state of the art MEMS 
+        3-axis accelerometer (AX6 includes a gyroscope), flash-based on-board memory, a real time quartz
+        clock, temperature sensor and light sensor. 
 
     The API is part of Open Movement, and is licensed under on Open Source license: the BSD 2-clause license, by Newcastle University.
 
-    The AX3 device uses a standard USB connector and enumerates on PC when connected. 
+    The AX3/AX6 devices uses a standard USB connector and enumerates on PC when connected. 
     The device is a "composite USB device" consisting of a communications device class (CDC) and a mass storage device (MSD).  
     The CDC interface presents a virtual serial port for device query and configuration -- the configuration software sends 
     simple text configuration commands over this channel.  The MSD interface presents a general purpose disk drive and file 
@@ -225,7 +225,7 @@ extern "C" {
  * @remark This can be used to detect a DLL version incompatibility in OmStartup().
  * @see OmStartup()
  */
-#define OM_VERSION 108
+#define OM_VERSION (108)
 
 
 /**
@@ -289,8 +289,11 @@ OM_EXPORT int OmSetLogCallback(OmLogCallback logCallback, void *reference);
  */
 typedef enum
 {
-    OM_DEVICE_REMOVED,                  /**< Device is being removed, or is already removed */
-    OM_DEVICE_CONNECTED                 /**< Device has been connected */
+/** \cond */
+    _OM_DEVICE_UNUSED_FORCE_SIGNED = -1,/**< Force the enum to be signed. */
+/** \endcond */
+    OM_DEVICE_REMOVED = 0,              /**< Device is being removed, or is already removed */
+    OM_DEVICE_CONNECTED = 1,            /**< Device has been connected */
 } OM_DEVICE_STATUS;
 
 
@@ -431,8 +434,8 @@ OM_EXPORT int OmSelfTest(int deviceId);
  */
 OM_EXPORT int OmGetMemoryHealth(int deviceId);
 
-#define OM_MEMORY_HEALTH_ERROR   1  /**< Threshold at or below which the OmGetMemoryHealth() result should be treated as a failure. @since 1.2 */
-#define OM_MEMORY_HEALTH_WARNING 8  /**< Threshold at or below which the OmGetMemoryHealth() result should be treated as a warning. @since 1.2 */
+#define OM_MEMORY_HEALTH_ERROR   (1)  /**< Threshold at or below which the OmGetMemoryHealth() result should be treated as a failure. @since 1.2 */
+#define OM_MEMORY_HEALTH_WARNING (8)  /**< Threshold at or below which the OmGetMemoryHealth() result should be treated as a warning. @since 1.2 */
 
 
 /**
@@ -653,7 +656,7 @@ OM_EXPORT int OmSetSessionId(int deviceId, unsigned int sessionId);
  * The number of bytes of metadata scratch area on the device.
  * @internal The 448 bytes comes from the device's 14 chunks of 32 bytes each.
  */
-#define OM_METADATA_SIZE 448
+#define OM_METADATA_SIZE (448)
 
 
 /**
@@ -695,6 +698,9 @@ OM_EXPORT int OmGetLastConfigTime(int deviceId, OM_DATETIME *time);
  */
 typedef enum
 {
+/** \cond */
+    _OM_ERASE_FORCE_SIGNED = -1,        /**< Force the enum to be signed. */
+/** \endcond */
     OM_ERASE_NONE = 0,                  /**< Data file not erased but metadata just updated (this is not recommended as it could lead to a data/metadata mismatch). */
     OM_ERASE_DELETE = 1,                /**< Data file is removed and a new one created with the current metadata. */
     OM_ERASE_QUICKFORMAT = 2,           /**< Device file-system is re-created and a new data file is created with the current metadata. */
@@ -753,7 +759,7 @@ OM_EXPORT int OmEraseDataAndCommit(int deviceId, OM_ERASE_LEVEL eraseLevel);
  * @see OmSetAccelConfig()
  * @since 1.3
  */
-#define OM_ACCEL_DEFAULT_RATE 100
+#define OM_ACCEL_DEFAULT_RATE (100)
 
 
 /**
@@ -761,7 +767,7 @@ OM_EXPORT int OmEraseDataAndCommit(int deviceId, OM_ERASE_LEVEL eraseLevel);
  * @see OmSetAccelConfig()
  * @since 1.3
  */
-#define OM_ACCEL_DEFAULT_RANGE 8
+#define OM_ACCEL_DEFAULT_RANGE (8)
 
 
 /**
@@ -849,6 +855,9 @@ OM_EXPORT int OmSetMaxSamples(int deviceId, int value);
  */
 typedef enum
 {
+/** \cond */
+    _OM_DOWNLOAD_FORCE_SIGNED = -1,     /**< Force the enum to be signed. */
+/** \endcond */
     OM_DOWNLOAD_NONE,                   /**< No download information */
     OM_DOWNLOAD_ERROR,                  /**< Data download failed with an error (the value parameter to OmDownloadCallback indicates a diagnostic error code) */
     OM_DOWNLOAD_PROGRESS,               /**< Data download progress (the value parameter to OmDownloadCallback indicates progress percentage) */
@@ -1017,9 +1026,9 @@ OM_EXPORT int OmCancelDownload(int deviceId);
  * @{
  */
 
-#define OM_TRUE                     1       /**< Return code: 'True' boolean value. @since 1.2 */
-#define OM_FALSE                    0       /**< Return code: 'False' boolean value. @since 1.2 */
-#define OM_OK                       0       /**< Return code: Success. */
+#define OM_TRUE                     (1)     /**< Return code: 'True' boolean value. @since 1.2 */
+#define OM_FALSE                    (0)     /**< Return code: 'False' boolean value. @since 1.2 */
+#define OM_OK                       (0)     /**< Return code: Success. */
 #define OM_E_FAIL                   -1      /**< Return code: Unspecified failure. An error occurred that didn't have a more specific category. */
 #define OM_E_UNEXPECTED             -2      /**< Return code: Unexpected error. An error occurred which was not anticipated by the code. */
 #define OM_E_NOT_VALID_STATE        -3      /**< Return code: API not in a valid state. For example, it is uninitialized, or an operation cannot be completed because a download is currently in progress. This error should be avoidable on the client side. */
@@ -1089,7 +1098,7 @@ OM_EXPORT const char *OmErrorString(int status);
 #define OM_DATETIME_SECONDS(dateTime) ((unsigned char)(((dateTime)      ) & 0x3f))  /**< Extract the seconds (0-59) from a packed date/time value. @hideinitializer */
 #define OM_DATETIME_MIN_VALID OM_DATETIME_FROM_YMDHMS(2000,  1,  1,  0, 0,   0)     /**< The minimum valid date/time value. @hideinitializer */
 #define OM_DATETIME_MAX_VALID OM_DATETIME_FROM_YMDHMS(2063, 12, 31, 23, 59, 59)     /**< The maximum valid date/time value. @hideinitializer */
-#define OM_DATETIME_ZERO (0)                                                        /**< Special date/time value for "infinitely early". @see OmSetDelays() @hideinitializer */
+#define OM_DATETIME_ZERO ((OM_DATETIME)0)                                           /**< Special date/time value for "infinitely early". @see OmSetDelays() @hideinitializer */
 #define OM_DATETIME_INFINITE ((OM_DATETIME)-1)                                      /**< Special date/time value for "infinitely late". @see OmSetDelays() @hideinitializer */
 
 /** @private The size of a buffer to hold a string representation of an OM_DATETIME */
@@ -1248,6 +1257,7 @@ OM_EXPORT OM_DATETIME OmReaderTimestamp(OmReaderHandle reader, int index, unsign
 typedef enum
 {
 /** \cond */
+    _OM_VALUE_FORCE_SIGNED = -1,        /**< Force the enum to be signed. */
     OM_VALUE_DEVICEID = 3, 
     OM_VALUE_SESSIONID = 4, 
     OM_VALUE_SEQUENCEID = 5, 
